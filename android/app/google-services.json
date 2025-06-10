@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "979471588513",
+    "project_id": "worldexplorer-40c05",
+    "storage_bucket": "worldexplorer-40c05.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:979471588513:android:94809353eb5a9e067024e0",
+        "android_client_info": {
+          "package_name": "at.rony.worldexplorer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKZgNhwimAzxU8NcJCqQe3nSiIJnAfwxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
