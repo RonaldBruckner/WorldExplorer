@@ -9,12 +9,25 @@ import '../widgets/currency_converter.dart';
 import '../widgets/emergency_numbers_widget.dart';
 import '../widgets/weather_forecast_overview.dart';
 
-class CountryPage extends ConsumerWidget {
+class CountryPage extends ConsumerStatefulWidget {
   const CountryPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CountryPage> createState() => _CountryPageState();
+}
+
+class _CountryPageState extends ConsumerState<CountryPage> {
+  
+  @override
+  Widget build(BuildContext context) {
     final model = ref.watch(countryViewModelProvider);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // only call once when mounted & not yet loaded
+      if (model.latitude == null && model.longitude == null && model.error == null) {
+        ref.read(countryViewModelProvider).checkAndLoadRequirements(context);
+      }
+    });
 
     if (model.latitude == null || model.longitude == null) {
       return BackgroundScaffold(

@@ -10,8 +10,5 @@ final countryViewModelProvider = ChangeNotifierProvider<CountryViewModel>((ref) 
 
   final viewModel = CountryViewModel(repository,geo);
 
-  // Trigger the initial load
-  viewModel.loadCountryData(lat: 0, lon:0);
-
   return viewModel;
 });

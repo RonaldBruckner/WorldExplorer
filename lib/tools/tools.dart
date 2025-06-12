@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -224,6 +225,67 @@ class Tools {
       // Only prints in debug mode
       debugPrint(message);
     }
+  }
+
+  static Future<bool> showLocationPermissionDialog(BuildContext context) async {
+    bool result = false;
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.location_permission_required),
+        content: Text(AppLocalizations.of(context)!.location_permission_text),
+        actions: [
+          TextButton(
+            onPressed: () {
+              result = true;
+              Navigator.of(context).pop();
+            },
+            child: Text(AppLocalizations.of(context)!.ok),
+          ),
+          TextButton(
+            onPressed: () {
+              result = false;
+              Navigator.of(context).pop();
+            },
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+        ],
+      ),
+    );
+    return result;
+  }
+
+  static void showMissingRequirementsDialog(BuildContext context, bool hasInternet, bool hasGPS) {
+    String message = '';
+    if (!hasInternet) message += AppLocalizations.of(context)!.internet_unavailable;
+    if (!hasGPS) message += AppLocalizations.of(context)!.gps_error;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: true,
+        onPopInvoked: (didPop) {
+          if (!didPop) {
+            SystemNavigator.pop();
+          }
+        },
+        child: AlertDialog(
+          title: Text(AppLocalizations.of(context)!.missing_requirements),
+          content: Text(message.trim()),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                SystemNavigator.pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
 

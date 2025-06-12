@@ -1,13 +1,18 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../data/models/country.dart';
 import '../../data/models/openweather_forecast_day.dart';
 import '../../data/repositories/country_repository.dart';
 import '../../data/api/geocoding_helper.dart';
 import '../../tools/location_helper.dart';
+import '../../tools/tools.dart';
 
 class CountryViewModel extends ChangeNotifier {
   final CountryRepository _repository;
   final GeocodingHelper _geocoding;
+
+  bool _hasInitialized = false;
   // State
   String? countryCode;
   String? countryName;
@@ -27,6 +32,37 @@ class CountryViewModel extends ChangeNotifier {
   String? error;
 
   CountryViewModel(this._repository, this._geocoding);
+
+  // Optionally inject these via constructor if needed
+  Future<void> checkAndLoadRequirements(BuildContext context) async {
+
+    if (_hasInitialized) return;
+    _hasInitialized = true;
+
+    final hasInternet = await Tools.checkInternet();
+    final hasGPS = await Tools.checkGPS();
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+
+      final agreed = await Tools.showLocationPermissionDialog(context);
+      if (agreed) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission != LocationPermission.always &&
+          permission != LocationPermission.whileInUse) {
+        return Tools.showMissingRequirementsDialog(context, hasInternet, false);
+      }
+    }
+
+    if (!hasInternet || !hasGPS) {
+      return Tools.showMissingRequirementsDialog(context, hasInternet, hasGPS);
+    }
+
+    await loadCountryData(lat: 0, lon: 0); // Use GPS
+  }
 
   Future<void> loadCountryData({required double lat, required double lon}) async {
     try {
