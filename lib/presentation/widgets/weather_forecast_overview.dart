@@ -209,10 +209,15 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
 
                               return Column(
                                 children: [
-                                  Text(
-                                    Tools.translateWeatherDescription(context, displayHour.description),
-                                    style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-                                    textAlign: TextAlign.center,
+                                  SizedBox(
+                                    height: 32, // adjust this based on font size (approx. 16 * 2)
+                                    child: Text(
+                                      Tools.translateWeatherDescription(context, displayHour.description),
+                                      style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   const SizedBox(height: 8),
                                   AnimatedOpacity(
