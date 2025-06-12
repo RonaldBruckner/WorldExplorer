@@ -35,12 +35,11 @@ class CountryViewModel extends ChangeNotifier {
 
   // Optionally inject these via constructor if needed
   Future<void> checkAndLoadRequirements(BuildContext context) async {
-
     if (_hasInitialized) return;
     _hasInitialized = true;
 
     final hasInternet = await Tools.checkInternet();
-    final hasGPS = await Tools.checkGPS();
+    var hasGPS = await Tools.checkGPS(); // mutable
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied ||
@@ -51,17 +50,20 @@ class CountryViewModel extends ChangeNotifier {
         permission = await Geolocator.requestPermission();
       }
 
+      // If user declined, fail
       if (permission != LocationPermission.always &&
           permission != LocationPermission.whileInUse) {
         return Tools.showMissingRequirementsDialog(context, hasInternet, false);
       }
+
+      hasGPS = await Tools.checkGPS();
     }
 
     if (!hasInternet || !hasGPS) {
       return Tools.showMissingRequirementsDialog(context, hasInternet, hasGPS);
     }
 
-    await loadCountryData(lat: 0, lon: 0); // Use GPS
+    await loadCountryData(lat: 0, lon: 0);
   }
 
   Future<void> loadCountryData({required double lat, required double lon}) async {
@@ -106,6 +108,11 @@ class CountryViewModel extends ChangeNotifier {
       }
 
       country = await _repository.getCountryDetails(countryCode!);
+
+      if (city == null || city!.isEmpty) {
+        city = country?.capital;
+      }
+
       notifyListeners();
 
       final result = await _repository.getWeatherForecast(lat, lon);
