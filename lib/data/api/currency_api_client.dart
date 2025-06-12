@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 
 import 'dart:convert';
 
+import '../../tools/tools.dart';
+
 class CurrencyApiService {
 
   Future<Map<String, String>> getCurrencySymbols() async {
