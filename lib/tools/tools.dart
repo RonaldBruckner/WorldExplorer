@@ -1,12 +1,10 @@
-import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 
 
 class Tools {
@@ -219,6 +217,13 @@ class Tools {
 
     final permission = await Geolocator.checkPermission();
     return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
+  }
+
+  static logDebug(String message) {
+    if (kDebugMode) {
+      // Only prints in debug mode
+      debugPrint(message);
+    }
   }
 
 

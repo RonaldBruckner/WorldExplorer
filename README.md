@@ -1,4 +1,3 @@
-🌍 WorldExplorer
 WorldExplorer is a mobile travel utility app built with Flutter that provides essential country information and tools based on your current GPS location or selected country.
 Using Riverpod for state management and follows a MVVM structure with repository-based data abstraction and testable ViewModels.
 

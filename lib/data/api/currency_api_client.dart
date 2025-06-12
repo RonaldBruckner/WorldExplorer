@@ -17,7 +17,7 @@ class CurrencyApiService {
 
   Future<double> getExchangeRate(String from, String to) async {
     final url = Uri.parse('https://api.frankfurter.app/latest?from=$from&to=$to');
-    debugPrint('getExchangeRate: $url');
+    Tools.logDebug('getExchangeRate: $url');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -35,7 +35,7 @@ class CurrencyApiService {
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
 
-      debugPrint(json.encode(data));
+      Tools.logDebug(json.encode(data));
 
       if (data.isEmpty || data.first['currencies'] == null) {
         throw Exception('No currency found for country code: $countryCode');

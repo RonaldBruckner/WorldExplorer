@@ -62,9 +62,7 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget> {
           _error = '${AppLocalizations.of(context)!.no_emergency_numbers_found_for} ${widget.countryCode}';
         }
       });
-    } catch (e, stackTrace) {
-      debugPrint('_loadFromLocalJson Error: $e');
-      debugPrint('_loadFromLocalJson StackTrace: $stackTrace');
+    } catch (e) {
       setState(() {
         _error = AppLocalizations.of(context)!.failed_to_load_local_emergency_numbers;
         _loading = false;
@@ -173,17 +171,17 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget> {
                 _buildEmergencyItem(
                   icon: Icons.local_police,
                   label: AppLocalizations.of(context)!.police,
-                  number: _data!.police?.first,
+                  number: _data!.police.first,
                 ),
                 _buildEmergencyItem(
                   icon: Icons.local_fire_department,
                   label: AppLocalizations.of(context)!.fire,
-                  number: _data!.fire?.first,
+                  number: _data!.fire.first,
                 ),
                 _buildEmergencyItem(
                   icon: Icons.local_hospital,
                   label: AppLocalizations.of(context)!.ambulance,
-                  number: _data!.ambulance?.first,
+                  number: _data!.ambulance.first,
                 ),
               ],
             ),

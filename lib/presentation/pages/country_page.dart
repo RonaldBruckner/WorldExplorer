@@ -67,8 +67,6 @@ class CountryPage extends ConsumerWidget {
                 isGpsMode: model.isGpsMode,
                 onCountrySelected: (selected) async {
 
-                  debugPrint('onCountrySelected: $selected');
-
                   if (selected == null) {
                     await model.loadCountryData(lat: 0, lon: 0);
                   } else {

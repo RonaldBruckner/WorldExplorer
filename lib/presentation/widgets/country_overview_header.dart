@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:WorldExplorer/tools/localization_extensions.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:country_map_svg/country_map_svg.dart';
 import 'package:flutter/material.dart';
@@ -48,7 +46,6 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   late List<DropdownMenuItem<String>> _dropdownItems;
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
-  bool _isGpsSelected = false;
 
   @override
   void initState() {
@@ -90,7 +87,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   void didUpdateWidget(covariant CountryOverviewHeader oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-      debugPrint('didUpdateWidget country: $widget.country');
+      Tools.logDebug('didUpdateWidget country: $widget.country');
 
       setState(() {
         if(widget.country == null) {

@@ -23,11 +23,11 @@ class CountryRepository {
 
     final local = await _countryDB.getCountryByCode(countryCode);
     if (local != null) {
-      debugPrint('getCountryDetails local: $local');
+      Tools.logDebug('getCountryDetails local: $local');
       return local;
     }
       final remote = await _countryApiClient.fetchCountryByCode(countryCode);
-      debugPrint('getCountryDetails remote: $remote');
+      Tools.logDebug('getCountryDetails remote: $remote');
       await _countryDB.saveCountry(remote);
       return remote;
   }
