@@ -20,14 +20,26 @@ class EmergencyNumbersWidget extends StatefulWidget {
   State<EmergencyNumbersWidget> createState() => _EmergencyNumbersWidgetState();
 }
 
-class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget> {
+
+class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget>  with SingleTickerProviderStateMixin {
   EmergencyData? _data;
   bool _loading = true;
   String? _error;
 
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+
   @override
   void initState() {
     super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
+
+    _opacity = Tween(begin: 0.2, end: 1.0).animate(_controller);
+
     _loadFromLocalJson();
   }
 
@@ -42,6 +54,12 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget> {
       });
       _loadFromLocalJson(); // re-trigger local JSON load
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   Future<void> _loadFromLocalJson() async {
@@ -106,7 +124,7 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget> {
     return Expanded(
       child: InkWell(
         onTap: () {
-          if (number != null && number.trim().isNotEmpty && widget.gpsMode) {
+          if (number != null && number.trim().isNotEmpty) {
             _callNumber(number);
           }
         },
@@ -188,8 +206,19 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget> {
             if (widget.gpsMode) ...[
               const SizedBox(height: 4),
               const Divider(),
-              Text('📍 ${AppLocalizations.of(context)!.current_location}:',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              Row(
+                children: [
+                  FadeTransition(
+                    opacity: _opacity,
+                    child: const Text('📍'),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${AppLocalizations.of(context)!.current_location}:',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
               const SizedBox(height: 4),
               Text(widget.address, style: const TextStyle(fontSize: 14)),
               const SizedBox(height: 4),
