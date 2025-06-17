@@ -9,6 +9,9 @@ import '../models/country.dart';
 import '../models/openweather_forecast_day.dart';
 
 class CountryRepository {
+
+  static String TAG = "CountryRepository";
+
   final CountryApiClient _countryApiClient;
   final CountryDatabase _countryDB;
 
@@ -24,11 +27,11 @@ class CountryRepository {
 
     final local = await _countryDB.getCountryByCode(countryCode);
     if (local != null) {
-      Tools.logDebug('getCountryDetails local: $local');
+      Tools.logDebug(TAG,'getCountryDetails local: $local');
       return local;
     }
       final remote = await _countryApiClient.fetchCountryByCode(countryCode);
-      Tools.logDebug('getCountryDetails remote: $remote');
+      Tools.logDebug(TAG,'getCountryDetails remote: $remote');
       await _countryDB.saveCountry(remote);
       return remote;
   }

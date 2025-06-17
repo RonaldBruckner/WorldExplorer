@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../constants.dart';
+import '../../tools/tools.dart';
 
 class GeocodingHelper {
 
@@ -11,6 +12,8 @@ class GeocodingHelper {
     );
 
     final response = await http.get(url);
+
+    //Tools.logDebug('getCountryInfo: $response');
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);

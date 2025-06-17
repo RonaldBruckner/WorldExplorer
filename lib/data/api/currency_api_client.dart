@@ -7,6 +7,8 @@ import '../../tools/tools.dart';
 
 class CurrencyApiService {
 
+  static String TAG = "CurrencyApiService";
+
   Future<Map<String, String>> getCurrencySymbols() async {
     final response = await http.get(Uri.parse('https://api.frankfurter.app/currencies'));
     if (response.statusCode == 200) {
@@ -19,7 +21,7 @@ class CurrencyApiService {
 
   Future<double> getExchangeRate(String from, String to) async {
     final url = Uri.parse('https://api.frankfurter.app/latest?from=$from&to=$to');
-    Tools.logDebug('getExchangeRate: $url');
+    Tools.logDebug(TAG,'getExchangeRate: $url');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -37,7 +39,7 @@ class CurrencyApiService {
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
 
-      Tools.logDebug(json.encode(data));
+      Tools.logDebug(TAG,json.encode(data));
 
       if (data.isEmpty || data.first['currencies'] == null) {
         throw Exception('No currency found for country code: $countryCode');
