@@ -60,7 +60,6 @@ android {
 
     dependencies {
         implementation("com.google.firebase:firebase-crashlytics:18.5.1")
-        implementation("com.google.firebase:firebase-analytics")
     }
 }
 
