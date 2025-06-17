@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 import '../../data/models/country.dart';
 import '../../data/models/openweather_forecast_day.dart';
 import '../../data/repositories/country_repository.dart';
@@ -8,9 +9,14 @@ import '../../data/api/geocoding_helper.dart';
 import '../../tools/location_helper.dart';
 import '../../tools/tools.dart';
 
-class CountryViewModel extends ChangeNotifier {
+
+class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   final CountryRepository _repository;
   final GeocodingHelper _geocoding;
+
+  static String TAG = "CountryViewModel";
+
+  Timer? _pollingTimer;
 
   bool _hasInitialized = false;
   // State
@@ -20,6 +26,8 @@ class CountryViewModel extends ChangeNotifier {
   String? address;
   double? latitude;
   double? longitude;
+  double? previousLatitude;
+  double? previousLongitude;
   int? utcOffset;
   Country? country;
   List<ForecastDay>? forecast;
@@ -32,6 +40,27 @@ class CountryViewModel extends ChangeNotifier {
   String? error;
 
   CountryViewModel(this._repository, this._geocoding);
+
+  void initLifecycle() {
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  void disposeLifecycle() {
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+
+    @override
+    void didChangeAppLifecycleState(AppLifecycleState state) {
+      Tools.logDebug(TAG, 'didChangeAppLifecycleState: $isGpsMode ');
+      if (state == AppLifecycleState.resumed && isGpsMode) {
+        _onAppResumed();
+      }
+    }
+
+  void _onAppResumed() async {
+    await loadCountryData(lat: 0, lon: 0);
+  }
 
   // Optionally inject these via constructor if needed
   Future<void> checkAndLoadRequirements(BuildContext context) async {
@@ -68,36 +97,63 @@ class CountryViewModel extends ChangeNotifier {
 
   Future<void> loadCountryData({required double lat, required double lon}) async {
     try {
-      // Reset state
-      error = null;
-      forecast = null;
-      country = null;
-      countryName = null;
-      countryCode  = null;
-      city  = null;
-      address = null;
-      fromCurrency = null;
-      toCurrency = null;
-      exchangeRate = null;
-      rateError = false;
-      isGpsMode = false;
-      latitude = null;
-      longitude = null;
-      utcOffset = null;
 
-      notifyListeners();
+      bool updateAll =true;
+
+      if (lat == 0 && lon == 0) {
+        isGpsMode = true;
+        if(_pollingTimer==null) {
+          startLocationPolling();
+        }
+        if(country!=null) {
+          updateAll = false;
+        }
+      } else {
+        isGpsMode = false;
+        stopLocationPolling();
+      }
+
+      if(lat != previousLatitude && lon != previousLongitude) {
+        previousLatitude = lat;
+        previousLongitude = lon;
+        updateAll = true;
+      }
+
+      Tools.logDebug(TAG, 'loadCountryData: $lat , $lon, updateAll: $updateAll');
+
+      if(updateAll) {
+        // Reset state
+        error = null;
+        forecast = null;
+        country = null;
+        countryName = null;
+        countryCode = null;
+        city = null;
+        address = null;
+        fromCurrency = null;
+        toCurrency = null;
+        exchangeRate = null;
+        rateError = false;
+        latitude = null;
+        longitude = null;
+        utcOffset = null;
+
+        notifyListeners();
+      }
 
       if(lat==0 && lon==0) {
         final pos = await LocationHelper.getCurrentPosition();
-        lat = pos.latitude;
-        lon =  pos.longitude;
-        isGpsMode = true;
+        latitude = pos.latitude;
+        longitude =  pos.longitude;
+      } else {
+        latitude = lat;
+        longitude = lon;
       }
 
-      latitude = lat;
-      longitude = lon;
 
-      final info = await _geocoding.getCountryInfo(lat, lon);
+      final info = await _geocoding.getCountryInfo(latitude!, longitude!);
+
+      Tools.logDebug(TAG, 'loadCountryData info: $info');
 
       if(info!=null) {
         countryName = info["name"];
@@ -107,29 +163,31 @@ class CountryViewModel extends ChangeNotifier {
         notifyListeners();
       }
 
-      country = await _repository.getCountryDetails(countryCode!);
+      if(updateAll) {
+        country = await _repository.getCountryDetails(countryCode!);
 
-      if (city == null || city!.isEmpty) {
-        city = country?.capital;
-      }
+        if (city == null || city!.isEmpty) {
+          city = country?.capital;
+        }
 
-      notifyListeners();
+        notifyListeners();
 
-      final result = await _repository.getWeatherForecast(lat, lon);
-      forecast = result;
-      utcOffset = result.isNotEmpty ? result.first.utcOffset : null;
-      notifyListeners();
+        final result = await _repository.getWeatherForecast(latitude, longitude);
+        forecast = result;
+        utcOffset = result.isNotEmpty ? result.first.utcOffset : null;
+        notifyListeners();
 
-      currencySymbols = await _repository.getCurrencySymbols();
-      fromCurrency = await _repository.getCurrencyFromCountryCode(countryCode!);
+        currencySymbols = await _repository.getCurrencySymbols();
+        fromCurrency = await _repository.getCurrencyFromCountryCode(countryCode!);
 
-      // Load saved target currency fallback
-      toCurrency ??= 'EUR';
-      if (currencySymbols!.containsKey(toCurrency)) {
-        await updateExchangeRate(fromCurrency!, toCurrency!);
+        toCurrency ??= 'EUR';
+        if (currencySymbols!.containsKey(toCurrency)) {
+          await updateExchangeRate(fromCurrency!, toCurrency!);
+        }
       }
 
     } catch (e) {
+      //Tools.logDebug('loadCountryData failed', e, stack);
       error = e.toString();
       notifyListeners();
     }
@@ -149,5 +207,24 @@ class CountryViewModel extends ChangeNotifier {
     } finally {
       notifyListeners();
     }
+  }
+
+  void startLocationPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 60), (_) async {
+      await loadCountryData(lat: 0, lon: 0);
+    });
+  }
+
+  void stopLocationPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    disposeLifecycle();
+    super.dispose();
   }
 }

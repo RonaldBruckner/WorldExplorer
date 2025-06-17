@@ -9,6 +9,7 @@ final countryViewModelProvider = ChangeNotifierProvider<CountryViewModel>((ref) 
   final geo = ref.watch(geocodingHelperProvider);
 
   final viewModel = CountryViewModel(repository,geo);
+  viewModel.initLifecycle();
 
   return viewModel;
 });
