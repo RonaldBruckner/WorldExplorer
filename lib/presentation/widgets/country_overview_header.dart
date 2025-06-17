@@ -87,7 +87,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   void didUpdateWidget(covariant CountryOverviewHeader oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-      Tools.logDebug('didUpdateWidget country: $widget.country');
+      //Tools.logDebug('didUpdateWidget country: $widget.country');
 
       setState(() {
         if(widget.country == null) {
@@ -120,10 +120,92 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
     }
   }
 
+  void _showCountryPickerDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String searchQuery = '';
+        final allCountries = Constants.supportedCountries;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final filteredCountries = searchQuery.isEmpty
+                ? allCountries
+                : allCountries.where((country) {
+              final nameKey = country['nameKey'] as String;
+              final localizedName = Tools.translateByKey(context, nameKey, nameKey);
+              return localizedName.toLowerCase().contains(searchQuery.toLowerCase());
+            }).toList();
+
+            return Dialog(
+              child: SizedBox(
+                height: 560,
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.gps_fixed),
+                      title: const Text('📍 GPS'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        widget.onCountrySelected(null);
+                      },
+                    ),
+                    const Divider(height: 0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: TextField(
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.search),
+                          hintText: 'Search country...',
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value;
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: filteredCountries.length,
+                        itemBuilder: (context, index) {
+                          final country = filteredCountries[index];
+                          final nameKey = country['nameKey'] as String;
+                          final localizedName = Tools.translateByKey(context, nameKey, nameKey);
+                          return ListTile(
+                            title: Text(localizedName),
+                            onTap: () {
+                              Navigator.pop(context);
+                              widget.onCountrySelected(country);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _getSelectedCountryName(String? code) {
+    if (code == null) return '📍 GPS';
+    final found = Constants.supportedCountries.firstWhere(
+          (c) => c['code'] == code,
+      orElse: () => {'nameKey': code},
+    );
+    return Tools.translateByKey(context, found['nameKey'], found['nameKey']);
+  }
 
   @override
   Widget build(BuildContext context) {
-
     if (widget.countryCode == null) {
       return ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 240),
@@ -151,22 +233,10 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
     final capitalText = capital ?? '...';
 
     final fact = widget.countryCode != null
-        ? Tools.getFact(AppLocalizations.of(context)!, widget.countryCode!)
+        ? Tools.getFact(AppLocalizations.of(context)!, widget.countryCode!.toLowerCase())
         : null;
 
     final hasFact = fact != null && fact.trim().isNotEmpty;
-
-    final existingCodes = _dropdownItems.map((item) => item.value).toList();
-    if (widget.countryCode != null && !existingCodes.contains(widget.countryCode)) {
-      _dropdownItems.insert(
-        0,
-        DropdownMenuItem(
-          value: widget.countryCode,
-          child: Text(widget.countryName!), // Optionally show localized name
-        ),
-      );
-    }
-
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 240),
@@ -193,62 +263,38 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
                         border: const OutlineInputBorder(),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                isExpanded: true,
-                                value: widget.countryCode,
-                                icon: const Icon(Icons.arrow_drop_down, size: 24),
+                      child: GestureDetector(
+                        onTap: _showCountryPickerDialog,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _getSelectedCountryName(widget.countryCode),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.black,
                                 ),
-                                dropdownColor: Colors.white,
-                                items: _dropdownItems,
-                                onChanged: (String? selectedCode) async {
-                                  if (selectedCode == '__current__') {
-                                    widget.onCountrySelected(null);
-                                  } else {
-                                    final selected = Constants.supportedCountries
-                                        .firstWhere((c) => c['code'] == selectedCode);
-                                    widget.onCountrySelected(selected);
-                                  }
-                                },
                               ),
                             ),
-                          ),
-                          if (widget.isGpsMode)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Chip(
-                                avatar: const Icon(Icons.gps_fixed, size: 16, color: Colors.white),
-                                label: const Text("GPS", style: TextStyle(color: Colors.white)),
-                                backgroundColor: Colors.teal,
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                            const Icon(Icons.arrow_drop_down),
+                            if (widget.isGpsMode)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: Chip(
+                                  avatar: const Icon(Icons.gps_fixed, size: 16, color: Colors.white),
+                                  label: const Text("GPS", style: TextStyle(color: Colors.white)),
+                                  backgroundColor: Colors.teal,
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
+                                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                                ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-
-                    /*
-                    const SizedBox(height: 0),
-                    Text(
-                      widget.cityName,
-                      style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey),
-                      textAlign: TextAlign.center,
-                    ),
-
-                     */
                   ],
                 ),
               ),
@@ -273,8 +319,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
                           fit: BoxFit.contain,
                           child: CountryMapSvg.getWidget(
                             widget.countryCode!.toLowerCase(),
-                            colorFilter: const ColorFilter.mode(
-                                Colors.teal, BlendMode.srcIn),
+                            colorFilter: const ColorFilter.mode(Colors.teal, BlendMode.srcIn),
                           ),
                         ),
                       ),
@@ -286,20 +331,13 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('🏙️ $capitalText',
-                              style: const TextStyle(fontSize: 14)),
+                          Text('🏙️ $capitalText', style: const TextStyle(fontSize: 14)),
                           const SizedBox(height: 4),
-                          Text('👥 $formattedPopulation',
-                              style: const TextStyle(fontSize: 14)),
+                          Text('👥 $formattedPopulation', style: const TextStyle(fontSize: 14)),
                           const SizedBox(height: 4),
-                          Text('🗣️ $languagesText',
-                              style: const TextStyle(fontSize: 14)),
+                          Text('🗣️ $languagesText', style: const TextStyle(fontSize: 14)),
                           const SizedBox(height: 4),
-
-                          Text(
-                            '🕒 ${formattedUtcOffset ?? ''}',
-                            style: const TextStyle(fontSize: 14),
-                          ),
+                          Text('🕒 ${formattedUtcOffset ?? ''}', style: const TextStyle(fontSize: 14)),
                         ],
                       ),
                     ),
@@ -324,6 +362,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
       ),
     );
   }
+
 }
 
 
