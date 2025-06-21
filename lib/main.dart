@@ -1,8 +1,8 @@
 import 'dart:ui';
 
-import 'package:WorldExplorer/presentation/pages/country_page.dart';
-import 'package:WorldExplorer/providers/country_view_model_provider.dart';
-import 'package:WorldExplorer/tools/shared_preferences_helper.dart';
+import 'package:world_explorer/presentation/pages/country_page.dart';
+import 'package:world_explorer/providers/country_view_model_provider.dart';
+import 'package:world_explorer/tools/shared_preferences_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

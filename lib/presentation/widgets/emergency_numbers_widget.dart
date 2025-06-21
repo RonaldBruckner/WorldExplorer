@@ -7,7 +7,10 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/emergency_data.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../tools/tools.dart';
+
 class EmergencyNumbersWidget extends StatefulWidget {
+
   final String countryCode;
   final String address;
   final double latitude;
@@ -22,6 +25,9 @@ class EmergencyNumbersWidget extends StatefulWidget {
 
 
 class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget>  with SingleTickerProviderStateMixin {
+
+  static String TAG = "EmergencyNumbersWidget";
+
   EmergencyData? _data;
   bool _loading = true;
   String? _error;
@@ -65,16 +71,23 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget>  with S
   Future<void> _loadFromLocalJson() async {
     try {
       final jsonString = await rootBundle.loadString('assets/emergency_data.json');
-      final jsonMap = json.decode(jsonString);
-      final List<dynamic> dataList = jsonMap['data'];
+      final Map<String, dynamic> jsonMap = json.decode(jsonString);
 
-      final List<EmergencyData> allData = dataList
-          .map((e) => EmergencyData.fromJson(e))
-          .where((entry) => entry.isoCode.toUpperCase() == widget.countryCode.toUpperCase())
-          .toList();
+      // Filter directly from the map using the countryCode as the key
+      final String targetIsoCode = widget.countryCode.toUpperCase();
+
+      // Check if the target country code exists as a key in the JSON map
+      final Map<String, dynamic>? countryData = jsonMap[targetIsoCode.toLowerCase()]; // Keys are lowercase in your JSON
+
+      EmergencyData? foundData;
+      if (countryData != null) {
+        foundData = EmergencyData.fromJson(targetIsoCode, countryData);
+      }
+
+      Tools.logDebug(TAG, '_loadFromLocalJson foundData: $foundData');
 
       setState(() {
-        _data = allData.isNotEmpty ? allData.first : null;
+        _data = foundData;
         _loading = false;
         if (_data == null) {
           _error = '${AppLocalizations.of(context)!.no_emergency_numbers_found_for} ${widget.countryCode}';
@@ -189,17 +202,17 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget>  with S
                 _buildEmergencyItem(
                   icon: Icons.local_police,
                   label: AppLocalizations.of(context)!.police,
-                  number: _data!.police.first,
+                  number: _data!.police,
                 ),
                 _buildEmergencyItem(
                   icon: Icons.local_fire_department,
                   label: AppLocalizations.of(context)!.fire,
-                  number: _data!.fire.first,
+                  number: _data!.fire,
                 ),
                 _buildEmergencyItem(
                   icon: Icons.local_hospital,
                   label: AppLocalizations.of(context)!.ambulance,
-                  number: _data!.ambulance.first,
+                  number: _data!.ambulance,
                 ),
               ],
             ),

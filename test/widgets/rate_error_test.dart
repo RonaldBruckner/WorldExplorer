@@ -1,11 +1,11 @@
-import 'package:WorldExplorer/providers/country_view_model_provider.dart';
+import 'package:world_explorer/providers/country_view_model_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:WorldExplorer/presentation/pages/country_page.dart';
-import 'package:WorldExplorer/presentation/viewmodels/country_view_model.dart';
-import 'package:WorldExplorer/data/repositories/country_repository.dart';
-import 'package:WorldExplorer/data/api/geocoding_helper.dart';
+import 'package:world_explorer/presentation/pages/country_page.dart';
+import 'package:world_explorer/presentation/viewmodels/country_view_model.dart';
+import 'package:world_explorer/data/repositories/country_repository.dart';
+import 'package:world_explorer/data/api/geocoding_helper.dart';
 
 // Fake GeocodingHelper
 class FakeGeocodingHelper extends GeocodingHelper {

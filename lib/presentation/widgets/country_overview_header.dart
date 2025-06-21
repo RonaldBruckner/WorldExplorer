@@ -44,6 +44,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   List<String>? languages;
   bool isLoading = true;
   late List<DropdownMenuItem<String>> _dropdownItems;
+  late List<Map<String, dynamic>> _sortedCountriesWithName;
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
 
@@ -67,17 +68,29 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    final sortedCountries = Constants.supportedCountries
+        .map((country) {
+      final nameKey = country['nameKey'] as String;
+      final localizedName = Tools.translateByKey(context, nameKey, nameKey);
+      return {
+        ...country,
+        'localizedName': localizedName,
+      };
+    })
+        .toList()
+      ..sort((a, b) => a['localizedName'].toLowerCase().compareTo(b['localizedName'].toLowerCase()));
+
+    _sortedCountriesWithName = sortedCountries;
+
     _dropdownItems = [
       const DropdownMenuItem<String>(
         value: '__current__',
         child: Text('📍 GPS'),
       ),
-      ...Constants.supportedCountries.map((country) {
-        final nameKey = country['nameKey'] as String;
-        final localizedName = Tools.translateByKey(context, nameKey, nameKey);
+      ..._sortedCountriesWithName.map((country) {
         return DropdownMenuItem<String>(
           value: country['code'],
-          child: Text(localizedName),
+          child: Text(country['localizedName']),
         );
       }).toList(),
     ];
@@ -125,7 +138,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
       context: context,
       builder: (context) {
         String searchQuery = '';
-        final allCountries = Constants.supportedCountries;
+        final allCountries = _sortedCountriesWithName;
 
         return StatefulBuilder(
           builder: (context, setState) {
@@ -139,7 +152,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
 
             return Dialog(
               child: SizedBox(
-                height: 560,
+                height: 450,
                 child: Column(
                   children: [
                     ListTile(
@@ -155,9 +168,9 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       child: TextField(
                         autofocus: true,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           prefixIcon: Icon(Icons.search),
-                          hintText: 'Search country...',
+                          hintText: AppLocalizations.of(context)!.search_country,
                           border: OutlineInputBorder(),
                           contentPadding: EdgeInsets.symmetric(horizontal: 12),
                         ),

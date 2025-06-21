@@ -1,8 +1,8 @@
-import 'package:WorldExplorer/data/models/country.dart';
-import 'package:WorldExplorer/data/repositories/country_repository.dart';
-import 'package:WorldExplorer/data/api/geocoding_helper.dart';
+import 'package:world_explorer/data/models/country.dart';
+import 'package:world_explorer/data/repositories/country_repository.dart';
+import 'package:world_explorer/data/api/geocoding_helper.dart';
 import 'country_view_model_test.mocks.dart';
-import 'package:WorldExplorer/presentation/viewmodels/country_view_model.dart';
+import 'package:world_explorer/presentation/viewmodels/country_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
