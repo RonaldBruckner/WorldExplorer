@@ -61,6 +61,19 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
       parent: _fadeController,
       curve: Curves.easeIn,
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      precacheDialog(context);
+    });
+  }
+
+  void precacheDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const SizedBox.shrink(),
+    );
+    Navigator.of(context).pop();
   }
 
 
@@ -134,6 +147,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   }
 
   void _showCountryPickerDialog() {
+    Future.delayed(Duration.zero, () {
     showDialog(
       context: context,
       builder: (context) {
@@ -206,6 +220,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
         );
       },
     );
+    });
   }
 
   String _getSelectedCountryName(String? code) {
