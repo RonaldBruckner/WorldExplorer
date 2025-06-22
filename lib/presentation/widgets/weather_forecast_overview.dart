@@ -174,7 +174,9 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
                       final day = entry.value;
 
                       return Expanded(
-                        child: Column(
+                          child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0), // Set your desired spacing
+                      child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                           FittedBox(
@@ -258,6 +260,7 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
                             }),
                           ],
                         ),
+                          ),
                       );
 
 
@@ -305,177 +308,6 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
           ),
         ),
       ),
-    );
-
-
-    return ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 260),
-    child: InkWell(
-    onTap: () {
-    if (_forecast != null) {
-    Navigator.push(
-    context,
-    MaterialPageRoute(
-    builder: (context) => WeatherDetailPage(forecast: _forecast!, currentCityName: widget.currentCityName,),
-    ),
-    );
-    }
-    },
-
-
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.shade300),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.currentCityName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.teal,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.chevron_right, color: Colors.teal, size: 20), // visual indicator
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: _forecast!.asMap().entries.map((entry) {
-                  final i = entry.key;
-                  final day = entry.value;
-
-                  return Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${Tools.localizedWeekday(context, day.hourly.first.time)}, ${day.hourly.first.time.day} ${Tools.localizedMonthAbbreviation(context, day.hourly.first.time.month)}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-
-                        const SizedBox(height: 2),
-
-                        Text(
-                          i == 0 ? AppLocalizations.of(context)!.now : '12:00',
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        Builder(builder: (_) {
-                          ForecastHour displayHour;
-
-                          if (i == 0) {
-                            final now = DateTime.now();
-                            displayHour = day.hourly.reduce((a, b) =>
-                            (a.time.difference(now)).abs() < (b.time.difference(now)).abs() ? a : b);
-                          } else {
-
-                            displayHour = day.hourly.firstWhere(
-                                  (h) => h.time.hour == 12,
-                              orElse: () => day.hourly[day.hourly.length ~/ 2],
-                            );
-                          }
-
-                          return Column(
-                            children: [
-                              Text(
-                                Tools.translateWeatherDescription(context, displayHour.description),
-                                style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              AnimatedOpacity(
-                                opacity: _iconVisible[i] ? 1.0 : 0.0,
-                                duration: const Duration(milliseconds: 500),
-                                child: Image.asset(
-                                  'assets/weather/200/${displayHour.iconCode}.png',
-                                  width: 80,
-                                  height: 80,
-                                ),
-                              ),
-                              Text.rich(
-                                TextSpan(children: [
-                                  TextSpan(
-                                    text: '${day.minTemp.toStringAsFixed(1)}°',
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                  const TextSpan(text: ' '),
-                                  TextSpan(
-                                    text: '${day.maxTemp.toStringAsFixed(1)}°',
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ]),
-                              ),
-                              Text('💨 ${displayHour.wind.toStringAsFixed(1)} m/s', style: const TextStyle(fontSize: 12)),
-                              Text('💧 ${displayHour.humidity.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 12)),
-                            ],
-                          );
-                        }),
-                      ],
-                    ),
-                  );
-
-
-                }).toList(),
-              ),
-
-              const SizedBox(height: 6),
-
-              if (_formattedSunrise != null && _formattedSunset != null)
-                Center(
-                  child: Text(
-                    '${AppLocalizations.of(context)!.sunrise}: $_formattedSunrise     ${AppLocalizations.of(context)!.sunset}: $_formattedSunset',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
-
-              const SizedBox(height: 12),
-
-// Attribution
-              Center(
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(0, 0),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: () async {
-                    final uri = Uri.parse('https://openweathermap.org');
-                    await launchUrl(
-                      uri,
-                      mode: LaunchMode.externalApplication,
-                    );
-                  },
-                  child: const Text(
-                    'Weather data by OpenWeather',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
     );
   }
 }
