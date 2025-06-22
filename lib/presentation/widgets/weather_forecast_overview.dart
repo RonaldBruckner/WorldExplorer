@@ -177,12 +177,14 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
+                          FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
                               '${Tools.localizedWeekday(context, day.hourly.first.time)}, ${day.hourly.first.time.day} ${Tools.localizedMonthAbbreviation(context, day.hourly.first.time.month)}',
                               style: const TextStyle(fontWeight: FontWeight.bold),
                               textAlign: TextAlign.center,
                             ),
-
+                          ),
                             const SizedBox(height: 2),
 
                             Text(
@@ -262,12 +264,14 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
 
                   if (_formattedSunrise != null && _formattedSunset != null)
                     Center(
+                      child: FittedBox(
+                      fit: BoxFit.scaleDown,
                       child: Text(
                         '${AppLocalizations.of(context)!.sunrise}: $_formattedSunrise     ${AppLocalizations.of(context)!.sunset}: $_formattedSunset',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ),
-
+                    ),
                   const SizedBox(height: 12),
 
 // Attribution
