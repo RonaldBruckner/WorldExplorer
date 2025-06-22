@@ -13,15 +13,15 @@ class GeocodingHelper {
 
     final response = await http.get(url);
 
-    //Tools.logDebug('getCountryInfo: $response');
-
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data['status'] == 'OK') {
         String? countryName;
         String? countryCode;
         String? cityName;
+        String? formattedAddress;
 
+        // Loop all results to find most reliable data
         for (var result in data['results']) {
           for (var component in result['address_components']) {
             if (component['types'].contains('country')) {
@@ -33,14 +33,22 @@ class GeocodingHelper {
             }
           }
 
-          if (countryName != null && countryCode != null) {
-            return {
-              'name': countryName,
-              'code': countryCode,
-              'city': cityName ?? '',
-              'address': data['results'][0]['formatted_address'] ?? ''
-            };
+          // Pick first result that includes both country and city
+          if (countryName != null && countryCode != null && cityName != null) {
+            formattedAddress = result['formatted_address'];
+            break;
           }
+        }
+
+        // Fallback if no result contained both
+        if (countryName != null && countryCode != null) {
+          formattedAddress ??= data['results'][0]['formatted_address'] ?? '';
+          return {
+            'name': countryName,
+            'code': countryCode,
+            'city': cityName ?? '',
+            'address': formattedAddress ?? ''
+          };
         }
       } else {
         throw Exception('Failed Geocoding: ${data['status']}');
@@ -51,5 +59,6 @@ class GeocodingHelper {
 
     return null;
   }
+
 
 }
