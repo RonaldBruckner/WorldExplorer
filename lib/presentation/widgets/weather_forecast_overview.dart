@@ -231,21 +231,25 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
                                       height: 80,
                                     ),
                                   ),
-                                  Text.rich(
-                                    TextSpan(children: [
-                                      TextSpan(
-                                        text: '${day.minTemp.toStringAsFixed(1)}°',
-                                        style: const TextStyle(color: Colors.grey),
-                                      ),
-                                      const TextSpan(text: ' '),
-                                      TextSpan(
-                                        text: '${day.maxTemp.toStringAsFixed(1)}°',
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text.rich(
+                                      TextSpan(children: [
+                                        TextSpan(
+                                          text: '${day.minTemp.toStringAsFixed(1)}°',
+                                          style: const TextStyle(color: Colors.grey),
                                         ),
-                                      ),
-                                    ]),
+                                        const TextSpan(text: ' '),
+                                        TextSpan(
+                                          text: '${day.maxTemp.toStringAsFixed(1)}°',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ]),
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
                                   Text('💨 ${displayHour.wind.toStringAsFixed(1)} m/s', style: const TextStyle(fontSize: 12)),
                                   Text('💧 ${displayHour.humidity.toStringAsFixed(0)}%', style: const TextStyle(fontSize: 12)),
