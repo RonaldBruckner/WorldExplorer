@@ -44,6 +44,7 @@ class WorldExplorerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false, // debug badge
       title: 'World Explorer',
       localizationsDelegates: [
         AppLocalizations.delegate,
