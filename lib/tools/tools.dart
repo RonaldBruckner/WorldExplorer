@@ -328,7 +328,6 @@ class Tools {
   }
 
   static String? getFact(AppLocalizations loc, String countryCode) {
-    Tools.logDebug("Tools", 'getFact countryCode: $countryCode');
     final facts = <String, String>{
       'af': loc.fact_af,
       'al': loc.fact_al,
