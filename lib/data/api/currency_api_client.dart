@@ -21,7 +21,6 @@ class CurrencyApiService {
 
   Future<double> getExchangeRate(String from, String to) async {
     final url = Uri.parse('https://api.frankfurter.app/latest?from=$from&to=$to');
-    Tools.logDebug(TAG,'getExchangeRate: $url');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
