@@ -76,10 +76,18 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
         widget.fromCurrency != null &&
         widget.toCurrency != null;
 
-    if (!hasAllData ||
-        widget.rateError ||
-        !(widget.currencySymbols?.containsKey(widget.fromCurrency) ?? false) ||
-        !(widget.currencySymbols?.containsKey(widget.toCurrency) ?? false)) {
+    final fromCurrencyValid =
+        widget.currencySymbols?.containsKey(widget.fromCurrency) ?? false;
+    final toCurrencyValid =
+        widget.currencySymbols?.containsKey(widget.toCurrency) ?? false;
+
+    // If there's an error, hide the widget completely
+    if (widget.rateError) {
+      return const SizedBox.shrink();
+    }
+
+    // While loading or missing data, show loading indicator
+    if (!hasAllData || !fromCurrencyValid || !toCurrencyValid) {
       return SizedBox(
         height: 180,
         child: Card(
@@ -89,22 +97,15 @@ class _CurrencyConverterState extends State<CurrencyConverter> {
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(color: Colors.grey.shade300),
           ),
-          child: Center(
+          child: const Center(
             child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: widget.rateError
-                  ? Text(
-                AppLocalizations.of(context)!.currency_data_not_available,
-                style: const TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
-              )
-                  : const CircularProgressIndicator(),
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
             ),
           ),
         ),
       );
     }
-
     return SizedBox(
       height: 180,
       child: Card(
