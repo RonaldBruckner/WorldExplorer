@@ -23,15 +23,13 @@ class CountryRepository {
   // Fetch country data by code
   Future<Country> getCountryDetails(String? countryCode) async {
 
-    //await _countryDB.deleteAndInitDb();
-
     final local = await _countryDB.getCountryByCode(countryCode);
     if (local != null) {
-      Tools.logDebug(TAG,'getCountryDetails local: $local');
+      Tools.logDebug(TAG,'getCountryDetails from cache: $countryCode');
       return local;
     }
       final remote = await _countryApiClient.fetchCountryByCode(countryCode);
-      Tools.logDebug(TAG,'getCountryDetails remote: $remote');
+      Tools.logDebug(TAG,'getCountryDetails from remote: $countryCode');
       await _countryDB.saveCountry(remote);
       return remote;
   }
@@ -42,13 +40,31 @@ class CountryRepository {
   }
 
   // Get available currency symbols
-  Future<Map<String, String>> getCurrencySymbols() {
-    return _currencyApi.getCurrencySymbols();
+  Future<Map<String, String>> getCurrencySymbols() async {
+    final cachedSymbols = await _countryDB.getCurrencySymbols();
+    if (cachedSymbols != null && cachedSymbols.isNotEmpty) {
+      Tools.logDebug(TAG, 'getCurrencySymbols from cache');
+      return cachedSymbols;
+    }
+
+    final symbols = await _currencyApi.getCurrencySymbols();
+    Tools.logDebug(TAG, 'getCurrencySymbols from remote');
+    await _countryDB.saveCurrencySymbols(symbols);
+    return symbols;
   }
 
   // Get currency code from country code (e.g., "US" → "USD")
-  Future<String> getCurrencyFromCountryCode(String? countryCode) {
-    return _currencyApi.getCurrencyFromCountryCode(countryCode);
+  Future<String> getCurrencyFromCountryCode(String? countryCode) async {
+    final cached = await _countryDB.getCurrencyForCountry(countryCode);
+    if (cached != null) {
+      Tools.logDebug(TAG, 'getCurrencyFromCountryCode from cache: $countryCode');
+      return cached;
+    }
+
+    final currency = await _currencyApi.getCurrencyFromCountryCode(countryCode);
+    Tools.logDebug(TAG, 'getCurrencyFromCountryCode from remote: $countryCode');
+    await _countryDB.saveCurrencyForCountry(countryCode, currency);
+    return currency;
   }
 
   // Get exchange rate

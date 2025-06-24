@@ -25,17 +25,49 @@ class CountryDatabase {
 
     return await openDatabase(
       path,
-      version: 1,
-      onCreate: (db, version) {
-        return db.execute('''
-          CREATE TABLE countries (
-            countryCode TEXT PRIMARY KEY,
-            name TEXT,
-            capital TEXT,
-            population INTEGER,
-            languages TEXT
-          )
-        ''');
+      version: 2,
+      onCreate: (db, version) async {
+        await db.execute('''
+      CREATE TABLE countries (
+        countryCode TEXT PRIMARY KEY,
+        name TEXT,
+        capital TEXT,
+        population INTEGER,
+        languages TEXT
+      )
+    ''');
+
+        await db.execute('''
+      CREATE TABLE currency_symbols (
+        code TEXT PRIMARY KEY,
+        name TEXT
+      )
+    ''');
+
+        await db.execute('''
+      CREATE TABLE country_currency (
+        countryCode TEXT PRIMARY KEY,
+        currencyCode TEXT
+      )
+    ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Add new tables without touching the existing countries table
+          await db.execute('''
+        CREATE TABLE currency_symbols (
+          code TEXT PRIMARY KEY,
+          name TEXT
+        )
+      ''');
+
+          await db.execute('''
+        CREATE TABLE country_currency (
+          countryCode TEXT PRIMARY KEY,
+          currencyCode TEXT
+        )
+      ''');
+        }
       },
     );
   }
@@ -77,6 +109,59 @@ class CountryDatabase {
       country!.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  Future<void> saveCurrencyForCountry(String? countryCode, String currencyCode) async {
+    final db = await database;
+    await db.insert(
+      'country_currency',
+      {
+        'countryCode': countryCode,
+        'currencyCode': currencyCode,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> saveCurrencySymbols(Map<String, String> symbols) async {
+    final db = await database;
+    final batch = db.batch();
+
+    for (final entry in symbols.entries) {
+      batch.insert(
+        'currency_symbols',
+        {'code': entry.key, 'name': entry.value},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit(noResult: true);
+  }
+
+  Future<Map<String, String>> getCurrencySymbols() async {
+    final db = await database;
+    final result = await db.query('currency_symbols');
+
+    return {
+      for (var row in result)
+        row['code'] as String: row['name'] as String,
+    };
+  }
+
+  Future<String?> getCurrencyForCountry(String? countryCode) async {
+    final db = await database;
+    final result = await db.query(
+      'country_currency',
+      where: 'countryCode = ?',
+      whereArgs: [countryCode],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return result.first['currencyCode'] as String?;
+    }
+
+    return null;
   }
 
   Future<void> clear() async {
