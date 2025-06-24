@@ -153,7 +153,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
       final info = await _geocoding.getCountryInfo(latitude!, longitude!);
 
-      Tools.logDebug(TAG, 'loadCountryData info: $info');
+      //Tools.logDebug(TAG, 'loadCountryData info: $info');
 
       if(info!=null) {
         countryName = info["name"];
