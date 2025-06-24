@@ -125,26 +125,7 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(color: Colors.grey.shade300),
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () async {
-              if (_forecast != null) {
-                //await Future.delayed(const Duration(milliseconds: 100));
 
-                Navigator.of(context).push(
-                  PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 300),
-                    pageBuilder: (_, animation, __) => FadeTransition(
-                      opacity: animation,
-                      child: WeatherDetailPage(
-                        forecast: _forecast!,
-                        currentCityName: widget.currentCityName,
-                      ),
-                    ),
-                  ),
-                );
-              }
-            },
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -174,8 +155,24 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
                       final day = entry.value;
 
                       return Expanded(
-                          child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0), // Set your desired spacing
+                          child: InkWell(
+                          onTap: () {
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            transitionDuration: const Duration(milliseconds: 300),
+                            pageBuilder: (_, animation, __) => FadeTransition(
+                              opacity: animation,
+                              child: WeatherDetailPage(
+                                forecast: _forecast!,
+                                currentCityName: widget.currentCityName,
+                                initialPage: i, // <-- pass selected day
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -261,8 +258,8 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
                           ],
                         ),
                           ),
+                      ),
                       );
-
 
                     }).toList(),
                   ),
@@ -307,7 +304,7 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
             ),
           ),
         ),
-      ),
+
     );
   }
 }

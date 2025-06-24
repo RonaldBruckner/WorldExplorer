@@ -8,11 +8,13 @@ import '../../tools/tools.dart';
 class WeatherDetailPage extends StatefulWidget {
   final List<ForecastDay> forecast;
   final String currentCityName;
+  final int initialPage;
 
   const WeatherDetailPage({
     super.key,
     required this.forecast,
     required this.currentCityName,
+    this.initialPage = 0,
   });
 
   @override
@@ -21,7 +23,14 @@ class WeatherDetailPage extends StatefulWidget {
 
 class _WeatherDetailPageState extends State<WeatherDetailPage> {
   int _currentPage = 0;
-  final _pageController = PageController();
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: widget.initialPage);
+    _currentPage = widget.initialPage;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -194,5 +203,11 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
       ),
     );
 
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 }
