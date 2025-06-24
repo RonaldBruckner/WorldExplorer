@@ -69,6 +69,8 @@ flutter:
     - assets/weather/200/
     - assets/emergency_data.json
     - assets/splash.png
+    - assets/country_facts_en.json
+    - assets/country_facts_de.json
 
 
 flutter_launcher_icons:
