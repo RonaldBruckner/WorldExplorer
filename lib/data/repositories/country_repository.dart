@@ -25,11 +25,9 @@ class CountryRepository {
 
     final local = await _countryDB.getCountryByCode(countryCode);
     if (local != null) {
-      Tools.logDebug(TAG,'getCountryDetails from cache: $countryCode');
       return local;
     }
       final remote = await _countryApiClient.fetchCountryByCode(countryCode);
-      Tools.logDebug(TAG,'getCountryDetails from remote: $countryCode');
       await _countryDB.saveCountry(remote);
       return remote;
   }
@@ -43,12 +41,10 @@ class CountryRepository {
   Future<Map<String, String>> getCurrencySymbols() async {
     final cachedSymbols = await _countryDB.getCurrencySymbols();
     if (cachedSymbols != null && cachedSymbols.isNotEmpty) {
-      Tools.logDebug(TAG, 'getCurrencySymbols from cache');
       return cachedSymbols;
     }
 
     final symbols = await _currencyApi.getCurrencySymbols();
-    Tools.logDebug(TAG, 'getCurrencySymbols from remote');
     await _countryDB.saveCurrencySymbols(symbols);
     return symbols;
   }
@@ -57,12 +53,10 @@ class CountryRepository {
   Future<String> getCurrencyFromCountryCode(String? countryCode) async {
     final cached = await _countryDB.getCurrencyForCountry(countryCode);
     if (cached != null) {
-      Tools.logDebug(TAG, 'getCurrencyFromCountryCode from cache: $countryCode');
       return cached;
     }
 
     final currency = await _currencyApi.getCurrencyFromCountryCode(countryCode);
-    Tools.logDebug(TAG, 'getCurrencyFromCountryCode from remote: $countryCode');
     await _countryDB.saveCurrencyForCountry(countryCode, currency);
     return currency;
   }

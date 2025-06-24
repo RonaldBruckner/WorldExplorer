@@ -84,8 +84,6 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget>  with S
         foundData = EmergencyData.fromJson(targetIsoCode, countryData);
       }
 
-      Tools.logDebug(TAG, '_loadFromLocalJson foundData: $foundData');
-
       setState(() {
         _data = foundData;
         _loading = false;

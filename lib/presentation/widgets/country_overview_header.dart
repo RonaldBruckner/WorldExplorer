@@ -1,16 +1,17 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:country_flags/country_flags.dart';
 import 'package:country_map_svg/country_map_svg.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 import '../../constants.dart';
 import '../../data/models/country.dart';
 import '../../tools/tools.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import '../viewmodels/country_view_model.dart';
-
 
 class CountryOverviewHeader extends StatefulWidget {
   final String? countryCode;
@@ -18,8 +19,6 @@ class CountryOverviewHeader extends StatefulWidget {
   final Country? country;
   final VoidCallback? onTap;
   final int? utcOffset;
-  final String? currentFact;
-  final DateTime? currentTime;
   final bool isGpsMode;
 
 
@@ -31,8 +30,6 @@ class CountryOverviewHeader extends StatefulWidget {
     required this.countryName,
     required this.country,
     required this.utcOffset,
-    required this.currentFact,
-    required this.currentTime,
     required this.onCountrySelected,
     required this.isGpsMode,
     this.onTap,
@@ -53,29 +50,23 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   String? formattedUtcOffset;
   List<String>? languages;
   bool isLoading = true;
-  late List<DropdownMenuItem<String>> _dropdownItems;
   late List<Map<String, dynamic>> _sortedCountriesWithName;
-  late final AnimationController _fadeController;
-  late final Animation<double> _fadeAnimation;
 
   late final AnimationController _factFadeController;
   late final Animation<double> _factFadeAnimation;
   String? _currentFact;
+
+  Timer? _clockTimer;
+  Timer? _factTimer;
+  int _factIndex = 0;
+
+  List<String>? countryFacts;
+
   DateTime? _currentTime;
 
   @override
   void initState() {
     super.initState();
-
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
-    );
 
     _factFadeController = AnimationController(
       vsync: this,
@@ -86,9 +77,59 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
       curve: Curves.easeInOut,
     );
 
+    _currentTime = getLocalTime(); // from widget.utcOffset
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final newTime = getLocalTime();
+      if (_currentTime == null ||
+          newTime.minute != _currentTime!.minute ||
+          newTime.hour != _currentTime!.hour) {
+        setState(() {
+          _currentTime = newTime;
+        });
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       precacheDialog(context);
     });
+  }
+
+  // Call this in initState to load facts from assets
+  Future<void> loadCountryFacts(String countryCode, String languageCode) async {
+    try {
+      Tools.logDebug(TAG, 'loadCountryFacts countryCode: $countryCode');
+
+      final language = languageCode == 'de' ? 'de' : 'en';
+      final jsonString = await rootBundle.loadString('assets/country_facts_$language.json');
+      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      final factsList = jsonMap['fact_${countryCode.toLowerCase()}'] as List<dynamic>?;
+
+      if (factsList != null && factsList.isNotEmpty) {
+        countryFacts = factsList.cast<String>();
+        _factIndex = Random().nextInt(countryFacts!.length);
+        _currentFact = countryFacts![_factIndex];
+
+        // Start fact rotation timer
+        _factTimer?.cancel();
+        _factTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+          if (countryFacts != null && countryFacts!.isNotEmpty) {
+            _factFadeController.reverse().then((_) {
+              setState(() {
+                _factIndex = (_factIndex + 1) % countryFacts!.length;
+                _currentFact = countryFacts![_factIndex];
+              });
+              _factFadeController.forward();
+            });
+          }
+        });
+      } else {
+        _currentFact = null;
+      }
+    } catch (e, stack) {
+      Tools.logDebug(TAG, 'loadCountryFacts failed: $e\n$stack');
+      countryFacts = null;
+      _currentFact = null;
+    }
   }
 
   void precacheDialog(BuildContext context) {
@@ -98,6 +139,20 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
       builder: (context) => const SizedBox.shrink(),
     );
     Navigator.of(context).pop();
+  }
+
+  DateTime getLocalTime() {
+    if (widget.utcOffset == null) return DateTime.now();
+    final nowUtc = DateTime.now().toUtc();
+    return nowUtc.add(Duration(seconds: widget.utcOffset!));
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    _factTimer?.cancel();
+    _factFadeController.dispose();
+    super.dispose();
   }
 
 
@@ -119,25 +174,18 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
 
     _sortedCountriesWithName = sortedCountries;
 
-    _dropdownItems = [
-      const DropdownMenuItem<String>(
-        value: '__current__',
-        child: Text('📍 GPS'),
-      ),
-      ..._sortedCountriesWithName.map((country) {
-        return DropdownMenuItem<String>(
-          value: country['code'],
-          child: Text(country['localizedName']),
-        );
-      }).toList(),
-    ];
+
+    final countryCode = widget.countryCode;
+    final languageCode = Localizations.localeOf(context).languageCode;
+
+    if (countryCode != null) {
+      loadCountryFacts(countryCode, languageCode);
+    }
   }
 
   @override
   void didUpdateWidget(covariant CountryOverviewHeader oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-      Tools.logDebug(TAG, 'didUpdateWidget country: $widget.country');
 
       setState(() {
         if(widget.country == null) {
@@ -146,13 +194,13 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
           capital = null;
           languages = null;
           formattedUtcOffset = null;
-          _fadeController.reset();
+          _factFadeController.reset();
         } else {
           isLoading = false;
           population = widget.country?.population;
           capital = widget.country?.capital;
           languages = widget.country?.languages;
-          _fadeController.forward();
+          _factFadeController.forward();
         }
       });
 
@@ -167,24 +215,6 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
           formattedUtcOffset = 'UTC${offsetInHours >= 0 ? '+' : ''}${offsetInHours.toStringAsFixed(1)}';
         }
       });
-    }
-
-
-    if (oldWidget.currentFact != widget.currentFact) {
-
-      Tools.logDebug(TAG,'didChangeDependencies newFact $widget.currentFact');
-        _factFadeController.reverse().then((_) {
-          setState(() {
-            _currentFact = widget.currentFact;
-          });
-          _factFadeController.forward();
-        });
-    }
-
-    if (oldWidget.currentTime != widget.currentTime) {
-        setState(() {
-          _currentTime = widget.currentTime;
-        });
     }
   }
 

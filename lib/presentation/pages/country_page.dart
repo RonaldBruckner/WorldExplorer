@@ -21,12 +21,12 @@ class _CountryPageState extends ConsumerState<CountryPage> {
   @override
   Widget build(BuildContext context) {
     final languageCode = Localizations.localeOf(context).languageCode;
-    final model = ref.watch(countryViewModelProvider(languageCode));
+    final model = ref.watch(countryViewModelProvider);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // only call once when mounted & not yet loaded
       if (model.latitude == null && model.longitude == null && model.error == null) {
-        ref.read(countryViewModelProvider(languageCode)).checkAndLoadRequirements(context);
+        ref.read(countryViewModelProvider).checkAndLoadRequirements(context);
       }
     });
 
@@ -78,8 +78,6 @@ class _CountryPageState extends ConsumerState<CountryPage> {
                 countryName: model.countryName!,
                 country: model.country,
                 utcOffset: model.utcOffset,
-                currentFact: model.currentFact,
-                currentTime:  model.currentTime,
                 isGpsMode: model.isGpsMode,
                 onCountrySelected: (selected) async {
 

@@ -60,7 +60,7 @@ class WorldExplorerApp extends StatelessWidget {
       home: Consumer(
         builder: (context, ref, _) {
           final languageCode = Localizations.localeOf(context).languageCode;
-          final viewModel = ref.watch(countryViewModelProvider(languageCode));
+          final viewModel = ref.watch(countryViewModelProvider);
           return CountryPage();
         },
       ),
