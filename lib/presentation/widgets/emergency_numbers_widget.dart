@@ -236,7 +236,11 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget>  with S
               Text(widget.address, style: const TextStyle(fontSize: 14)),
               const SizedBox(height: 4),
               Text(
-                'Latitude: ${widget.latitude}, Longitude: ${widget.longitude}',
+                'Latitude: ${widget.latitude}',
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              Text(
+                'Longitude: ${widget.longitude}',
                 style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ],
