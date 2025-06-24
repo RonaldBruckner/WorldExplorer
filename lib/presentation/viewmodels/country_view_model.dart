@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:path/path.dart';
 import 'dart:async';
 import '../../data/models/country.dart';
 import '../../data/models/openweather_forecast_day.dart';
@@ -13,10 +18,12 @@ import '../../tools/tools.dart';
 class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   final CountryRepository _repository;
   final GeocodingHelper _geocoding;
+  final String _languageCode;
 
   static String TAG = "CountryViewModel";
 
   Timer? _pollingTimer;
+  Timer? _clockTimer;
 
   bool _hasInitialized = false;
   // State
@@ -39,7 +46,13 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   bool rateError = false;
   String? error;
 
-  CountryViewModel(this._repository, this._geocoding);
+  List<String>? countryFacts;
+  String? currentFact;
+  DateTime? currentTime;
+  Timer? _factTimer;
+  int _factIndex = 0;
+
+  CountryViewModel(this._repository, this._geocoding, this._languageCode);
 
   void initLifecycle() {
     WidgetsBinding.instance.addObserver(this);
@@ -92,7 +105,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
       return Tools.showMissingRequirementsDialog(context, hasInternet, hasGPS);
     }
 
-    await loadCountryData(lat: 0, lon: 0);
+    await loadCountryData( lat: 0, lon: 0);
   }
 
   Future<void> loadCountryData({required double lat, required double lon}) async {
@@ -175,7 +188,14 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         final result = await _repository.getWeatherForecast(latitude, longitude);
         forecast = result;
         utcOffset = result.isNotEmpty ? result.first.utcOffset : null;
+        currentTime = getLocalTime();
         notifyListeners();
+
+        _clockTimer?.cancel();
+        _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+          currentTime = getLocalTime();
+          notifyListeners(); // to trigger time update in UI
+        });
 
         currencySymbols = await _repository.getCurrencySymbols();
         fromCurrency = await _repository.getCurrencyFromCountryCode(countryCode!);
@@ -184,6 +204,8 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         if (currencySymbols!.containsKey(toCurrency)) {
           await updateExchangeRate(fromCurrency!, toCurrency!);
         }
+
+        await loadCountryFacts(countryCode!);
       }
 
     } catch (e) {
@@ -191,6 +213,41 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
       error = e.toString();
       notifyListeners();
     }
+  }
+
+  Future<void> loadCountryFacts(String countryCode) async {
+    try {
+      final language = _languageCode == 'de' ? 'de' : 'en';
+      final jsonString = await rootBundle.loadString('assets/country_facts_$language.json');
+      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+
+      final factsList = jsonMap['fact_${countryCode.toLowerCase()}'] as List<dynamic>?;
+      if (factsList != null && factsList.isNotEmpty) {
+        countryFacts = factsList.cast<String>();
+        _factIndex = Random().nextInt(countryFacts!.length);
+        currentFact = countryFacts![_factIndex];
+        Tools.logDebug(TAG,'loadCountryFacts currentFact $currentFact');
+        _startFactRotation();
+        notifyListeners();
+      }
+    } catch (e, stack) {
+      Tools.logDebug(TAG, 'loadCountryFacts failed: $e\n$stack');
+      countryFacts = null;
+      currentFact = null;
+      notifyListeners();
+    }
+  }
+
+  void _startFactRotation() {
+    _factTimer?.cancel();
+    _factTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (countryFacts != null && countryFacts!.isNotEmpty) {
+        _factIndex = (_factIndex + 1) % countryFacts!.length;
+        currentFact = countryFacts![_factIndex];
+        Tools.logDebug(TAG,'_startFactRotation currentFact $currentFact');
+        notifyListeners();
+      }
+    });
   }
 
   Future<void> updateExchangeRate(String from, String to) async {
@@ -209,6 +266,12 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  DateTime getLocalTime() {
+    if (utcOffset == null) return DateTime.now();
+    final now = DateTime.now().toUtc(); // current UTC time
+    return now.add(Duration(seconds: utcOffset!));
+  }
+
   void startLocationPolling() {
     _pollingTimer?.cancel();
     _pollingTimer = Timer.periodic(const Duration(seconds: 60), (_) async {
@@ -224,6 +287,8 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   @override
   void dispose() {
     _pollingTimer?.cancel();
+    _factTimer?.cancel();
+    _clockTimer?.cancel();
     disposeLifecycle();
     super.dispose();
   }

@@ -59,7 +59,8 @@ class WorldExplorerApp extends StatelessWidget {
       theme: ThemeData(useMaterial3: true, brightness: Brightness.light),
       home: Consumer(
         builder: (context, ref, _) {
-          final viewModel = ref.watch(countryViewModelProvider);
+          final languageCode = Localizations.localeOf(context).languageCode;
+          final viewModel = ref.watch(countryViewModelProvider(languageCode));
           return CountryPage();
         },
       ),

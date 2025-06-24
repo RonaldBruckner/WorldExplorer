@@ -2,11 +2,14 @@ import 'package:country_flags/country_flags.dart';
 import 'package:country_map_svg/country_map_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../constants.dart';
 import '../../data/models/country.dart';
 import '../../tools/tools.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../viewmodels/country_view_model.dart';
 
 
 class CountryOverviewHeader extends StatefulWidget {
@@ -15,6 +18,8 @@ class CountryOverviewHeader extends StatefulWidget {
   final Country? country;
   final VoidCallback? onTap;
   final int? utcOffset;
+  final String? currentFact;
+  final DateTime? currentTime;
   final bool isGpsMode;
 
 
@@ -26,6 +31,8 @@ class CountryOverviewHeader extends StatefulWidget {
     required this.countryName,
     required this.country,
     required this.utcOffset,
+    required this.currentFact,
+    required this.currentTime,
     required this.onCountrySelected,
     required this.isGpsMode,
     this.onTap,
@@ -38,6 +45,9 @@ class CountryOverviewHeader extends StatefulWidget {
 }
 
 class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with TickerProviderStateMixin {
+
+  static String TAG = "CountryOverviewHeader";
+
   int? population;
   String? capital;
   String? formattedUtcOffset;
@@ -47,6 +57,11 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   late List<Map<String, dynamic>> _sortedCountriesWithName;
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
+
+  late final AnimationController _factFadeController;
+  late final Animation<double> _factFadeAnimation;
+  String? _currentFact;
+  DateTime? _currentTime;
 
   @override
   void initState() {
@@ -60,6 +75,15 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
       curve: Curves.easeIn,
+    );
+
+    _factFadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _factFadeAnimation = CurvedAnimation(
+      parent: _factFadeController,
+      curve: Curves.easeInOut,
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -113,7 +137,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   void didUpdateWidget(covariant CountryOverviewHeader oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-      //Tools.logDebug('didUpdateWidget country: $widget.country');
+      Tools.logDebug(TAG, 'didUpdateWidget country: $widget.country');
 
       setState(() {
         if(widget.country == null) {
@@ -143,6 +167,24 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
           formattedUtcOffset = 'UTC${offsetInHours >= 0 ? '+' : ''}${offsetInHours.toStringAsFixed(1)}';
         }
       });
+    }
+
+
+    if (oldWidget.currentFact != widget.currentFact) {
+
+      Tools.logDebug(TAG,'didChangeDependencies newFact $widget.currentFact');
+        _factFadeController.reverse().then((_) {
+          setState(() {
+            _currentFact = widget.currentFact;
+          });
+          _factFadeController.forward();
+        });
+    }
+
+    if (oldWidget.currentTime != widget.currentTime) {
+        setState(() {
+          _currentTime = widget.currentTime;
+        });
     }
   }
 
@@ -236,7 +278,7 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   Widget build(BuildContext context) {
     if (widget.countryCode == null) {
       return ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 240),
+        constraints: const BoxConstraints(minHeight: 280),
         child: Card(
           margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
           elevation: 2,
@@ -260,14 +302,8 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
     final languagesText = languages?.join(', ') ?? '...';
     final capitalText = capital ?? '...';
 
-    final fact = widget.countryCode != null
-        ? Tools.getFact(AppLocalizations.of(context)!, widget.countryCode!.toLowerCase())
-        : null;
-
-    final hasFact = fact != null && fact.trim().isNotEmpty;
-
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 240),
+      constraints: const BoxConstraints(minHeight: 280),
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
         elevation: 2,
@@ -365,20 +401,25 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
                           const SizedBox(height: 4),
                           Text('🗣️ $languagesText', style: const TextStyle(fontSize: 14)),
                           const SizedBox(height: 4),
-                          Text('🕒 ${formattedUtcOffset ?? ''}', style: const TextStyle(fontSize: 14)),
+                          Text(
+                            _currentTime != null
+                                ? '🕒 ${DateFormat.Hm().format(_currentTime!)}'
+                                : '🕒 --:--',
+                            style: const TextStyle(fontSize: 14),
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-              if (hasFact)
+              if (_currentFact != null)
                 FadeTransition(
-                  opacity: _fadeAnimation,
+                  opacity: _factFadeAnimation,
                   child: Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: Text(
-                      fact,
+                      _currentFact!,
                       style: const TextStyle(fontSize: 14, color: Colors.black87),
                       textAlign: TextAlign.center,
                     ),
