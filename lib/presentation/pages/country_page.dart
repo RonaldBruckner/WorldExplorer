@@ -7,6 +7,7 @@ import '../widgets/background_scaffold.dart';
 import '../widgets/country_overview_header.dart';
 import '../widgets/currency_converter.dart';
 import '../widgets/emergency_numbers_widget.dart';
+import '../widgets/nearby_attractions_widget.dart';
 import '../widgets/weather_forecast_overview.dart';
 
 class CountryPage extends ConsumerStatefulWidget {
@@ -20,8 +21,9 @@ class _CountryPageState extends ConsumerState<CountryPage> {
   
   @override
   Widget build(BuildContext context) {
-    final languageCode = Localizations.localeOf(context).languageCode;
     final model = ref.watch(countryViewModelProvider);
+
+    final attractionsValue = model.nearbyAttractions;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // only call once when mounted & not yet loaded
@@ -91,6 +93,28 @@ class _CountryPageState extends ConsumerState<CountryPage> {
                   }
                 },
                 onSvgTap: model.openMapForCurrentLocation,
+              ),
+              const SizedBox(height: 8),
+
+              attractionsValue.when(
+                loading: () => const SizedBox(
+                  height: 180,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (err, st) => Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Failed to load nearby attractions.",
+                      style: const TextStyle(color: Colors.red)),
+                ),
+                data: (attractions) => attractions.isEmpty
+                    ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("No nearby attractions found."),
+                )
+                    : NearbyAttractionsWidget(
+                  attractions: attractions,
+                  cityName: model.city,
+                ),
               ),
               const SizedBox(height: 8),
               WeatherForecastOverview(

@@ -203,6 +203,8 @@
   "country_zm": "Zambia",
   "country_zw": "Zimbabwe",
 
+  "nearby_places_around": "Nearby places around",
+
   "failed_to_load_forecast" : "Failed to load forecast",
   "failed_to_load_weather" : "Failed to load weather",
 

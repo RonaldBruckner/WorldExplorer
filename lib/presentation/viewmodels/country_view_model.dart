@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
+import '../../data/api/places_api_client.dart';
 import '../../data/models/country.dart';
 import '../../data/models/openweather_forecast_day.dart';
 import '../../data/repositories/country_repository.dart';
@@ -41,6 +43,8 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   bool isGpsMode = true;
   bool rateError = false;
   String? error;
+
+  AsyncValue<List<Map<String, dynamic>>> nearbyAttractions = const AsyncValue.loading();
 
 
   CountryViewModel(this._repository, this._geocoding);
@@ -189,6 +193,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
           await updateExchangeRate(fromCurrency!, toCurrency!);
         }
 
+        await loadNearbyAttractions();
 
       }
 
@@ -213,6 +218,22 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
     } finally {
       notifyListeners();
     }
+  }
+
+  Future<void> loadNearbyAttractions() async {
+    if (latitude == null || longitude == null) return;
+
+    nearbyAttractions = const AsyncValue.loading();
+    notifyListeners();
+
+    try {
+      final data = await PlacesApiClient().getNearbyAttractions(latitude!, longitude!);
+      nearbyAttractions = AsyncValue.data(data);
+    } catch (e, st) {
+      nearbyAttractions = AsyncValue.error(e, st);
+    }
+
+    notifyListeners();
   }
 
   Future<void> openMapForCurrentLocation() async {

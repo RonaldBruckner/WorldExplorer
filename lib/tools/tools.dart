@@ -327,6 +327,53 @@ class Tools {
     return translations[key] ?? code;
   }
 
+
+  static String getPrimaryReadableType(List types, String languageCode) {
+    const mapping = {
+      'museum': {'en': 'Museum', 'de': 'Museum'},
+      'art_gallery': {'en': 'Art Gallery', 'de': 'Kunstgalerie'},
+      'amusement_park': {'en': 'Amusement Park', 'de': 'Freizeitpark'},
+      'zoo': {'en': 'Zoo', 'de': 'Zoo'},
+      'park': {'en': 'Park', 'de': 'Park'},
+      'church': {'en': 'Church', 'de': 'Kirche'},
+      'hindu_temple': {'en': 'Temple', 'de': 'Hindu-Tempel'},
+      'mosque': {'en': 'Mosque', 'de': 'Moschee'},
+      'synagogue': {'en': 'Synagogue', 'de': 'Synagoge'},
+      'aquarium': {'en': 'Aquarium', 'de': 'Aquarium'},
+      'natural_feature': {'en': 'Nature', 'de': 'Natur'},
+      'stadium': {'en': 'Stadium', 'de': 'Stadion'},
+      'landmark': {'en': 'Landmark', 'de': 'Wahrzeichen'},
+      'tourist_attraction': {'en': 'Attraction', 'de': 'Sehenswürdigkeit'},
+    };
+
+    const priority = [
+      'museum',
+      'art_gallery',
+      'amusement_park',
+      'zoo',
+      'park',
+      'church',
+      'hindu_temple',
+      'mosque',
+      'synagogue',
+      'aquarium',
+      'natural_feature',
+      'stadium',
+      'landmark',
+      'tourist_attraction',
+    ];
+
+    for (final type in priority) {
+      if (types.contains(type)) {
+        final translation = mapping[type]?[languageCode];
+        if (translation != null) return translation;
+      }
+    }
+
+    return ''; // fallback
+  }
+
+
   static Future<bool> checkInternet() async {
     final connectivityResult = await Connectivity().checkConnectivity();
     return connectivityResult != ConnectivityResult.none;
@@ -406,7 +453,4 @@ class Tools {
       ),
     );
   }
-
-
 }
-

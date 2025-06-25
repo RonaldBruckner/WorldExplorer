@@ -136,7 +136,7 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          widget.currentCityName,
+                          'Forecast for ${widget.currentCityName ?? "..." }',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
