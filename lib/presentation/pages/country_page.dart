@@ -23,8 +23,6 @@ class _CountryPageState extends ConsumerState<CountryPage> {
   Widget build(BuildContext context) {
     final model = ref.watch(countryViewModelProvider);
 
-    final attractionsValue = model.nearbyAttractions;
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // only call once when mounted & not yet loaded
       if (model.latitude == null && model.longitude == null && model.error == null) {
@@ -32,7 +30,19 @@ class _CountryPageState extends ConsumerState<CountryPage> {
       }
     });
 
-    if (model.latitude == null || model.longitude == null) {
+    // Show full-screen error if model.error is set and nothing else loaded
+    if (model.error != null ) {
+      return BackgroundScaffold(
+        title: '',
+        child: Center(
+          child: Text(
+            model.error!,
+            style: const TextStyle(color: Colors.red, fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    } else if (model.latitude == null || model.longitude == null) {
       return BackgroundScaffold(
         title: '',
         child: Center(
@@ -46,9 +56,7 @@ class _CountryPageState extends ConsumerState<CountryPage> {
           ),
         ),
       );
-    }
-
-    if (model.countryCode == null || model.countryName == null) {
+    } else if (model.countryCode == null || model.countryName == null) {
       return BackgroundScaffold(
         title: '',
         child: Center(
@@ -63,6 +71,8 @@ class _CountryPageState extends ConsumerState<CountryPage> {
         ),
       );
     }
+
+
 
     return BackgroundScaffold(
       title: '',
@@ -96,30 +106,16 @@ class _CountryPageState extends ConsumerState<CountryPage> {
               ),
               const SizedBox(height: 8),
 
-              attractionsValue.when(
-                loading: () => const SizedBox(
-                  height: 180,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (err, st) => Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("Failed to load nearby attractions.",
-                      style: const TextStyle(color: Colors.red)),
-                ),
-                data: (attractions) => attractions.isEmpty
-                    ? Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text("No nearby attractions found."),
-                )
-                    : NearbyAttractionsWidget(
-                  attractions: attractions,
-                  cityName: model.city,
-                ),
+              NearbyAttractionsWidget(
+                  attractions: model.nearbyAttractions,
+                  attractionsError: model.attractionsError,
+                  cityName: model.city
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               WeatherForecastOverview(
                 forecast: model.forecast,
                 currentCityName: model.city ?? '',
+                forecastError: model.forecastError,
               ),
               const SizedBox(height: 16),
               CurrencyConverter(

@@ -10,7 +10,7 @@ class CurrencyApiService {
   static String TAG = "CurrencyApiService";
 
   Future<Map<String, String>> getCurrencySymbols() async {
-    final response = await http.get(Uri.parse('https://api.frankfurter.app/currencies'));
+    final response = await http.get(Uri.parse('https://api.frankfurter.app/currencies')).timeout(const Duration(seconds: 5));
     if (response.statusCode == 200) {
       final data = json.decode(response.body) as Map<String, dynamic>;
       return data.map((code, name) => MapEntry(code, name.toString()));
@@ -21,7 +21,7 @@ class CurrencyApiService {
 
   Future<double> getExchangeRate(String from, String to) async {
     final url = Uri.parse('https://api.frankfurter.app/latest?from=$from&to=$to');
-    final response = await http.get(url);
+    final response = await http.get(url).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -33,7 +33,7 @@ class CurrencyApiService {
 
   Future<String> getCurrencyFromCountryCode(String? countryCode) async {
     final url = Uri.parse('https://restcountries.com/v3.1/alpha/$countryCode');
-    final response = await http.get(url);
+    final response = await http.get(url).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);

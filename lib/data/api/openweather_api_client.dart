@@ -2,16 +2,19 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../../constants.dart';
+import '../../tools/tools.dart';
 import '../models/openweather_forecast_day.dart';
 
 class OpenWeatherApiClient {
 
-  Future<List<ForecastDay>> get4DayForecast(double? lat, double? lon) async {
+  static String TAG = "OpenWeatherApiClient";
+
+  Future<List<ForecastDay>?> get4DayForecast(double? lat, double? lon) async {
     final url = Uri.parse(
       'https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&units=metric&appid=${Constants.openWeatherApiKey}',
     );
-
-    final response = await http.get(url);
+    try {
+    final response = await http.get(url).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -63,19 +66,22 @@ class OpenWeatherApiClient {
         final maxTemp = temps.reduce((a, b) => a > b ? a : b);
 
         forecastDays.add(ForecastDay(
-          day: dayStr,
-          minTemp: minTemp,
-          maxTemp: maxTemp,
-          hourly: hourly,
-          sunrise: city['sunrise'],
-          sunset: city['sunset'],
-          utcOffset: city['timezone']
+            day: dayStr,
+            minTemp: minTemp,
+            maxTemp: maxTemp,
+            hourly: hourly,
+            sunrise: city['sunrise'],
+            sunset: city['sunset'],
+            utcOffset: city['timezone']
         ));
       }
 
       return forecastDays;
-    } else {
-      throw Exception('Failed to load forecast');
+    }
+    } catch (e, stackTrace) {
+      Tools.logDebug(TAG, 'Exception: $e');
+      Tools.logDebug(TAG, 'StackTrace: $stackTrace');
+      return null;
     }
   }
 

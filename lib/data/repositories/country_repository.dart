@@ -33,7 +33,7 @@ class CountryRepository {
   }
 
   // Fetch 4-day weather forecast
-  Future<List<ForecastDay>> getWeatherForecast(double? lat, double? lon) {
+  Future<List<ForecastDay>?> getWeatherForecast(double? lat, double? lon) {
     return _weatherApi.get4DayForecast(lat, lon);
   }
 

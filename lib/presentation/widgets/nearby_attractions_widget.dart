@@ -1,15 +1,21 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
 import '../../l10n/app_localizations.dart';
 import '../../tools/tools.dart';
 
 class NearbyAttractionsWidget extends StatefulWidget {
-  final List<Map<String, dynamic>> attractions;
+  final List<Map<String, dynamic>>? attractions;
+  final bool attractionsError;
   final String? cityName;
 
   const NearbyAttractionsWidget({
     super.key,
     required this.attractions,
+    required this.attractionsError,
     this.cityName,
   });
 
@@ -39,9 +45,62 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final places = widget.attractions.take(5).toList();
+    // Hide widget entirely on error
+    if (widget.attractionsError) {
+      return const SizedBox.shrink();
+    }
+
+    // Show loading card
+    if (widget.attractions == null) {
+      final loc = AppLocalizations.of(context);
+      final title =
+          '${loc?.nearby_places_around ?? "Nearby places around"} ${widget.cityName ?? "..."}';
+
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.shade300),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 16, bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.teal,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.chevron_right, color: Colors.teal, size: 20),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const SizedBox(
+                height: 180,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Attractions are available
+    final places = widget.attractions!.take(10).toList();
     final loc = AppLocalizations.of(context);
-    final title = '${loc?.nearby_places_around ?? "Nearby places around"} ${widget.cityName ?? "..."}';
+    final title =
+        '${loc?.nearby_places_around ?? "Nearby places around"} ${widget.cityName ?? "..."}';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -100,7 +159,7 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
 
             // PageView of places
             SizedBox(
-              height: 130,
+              height: 180,
               child: PageView.builder(
                 controller: _controller,
                 itemCount: places.length,
@@ -108,66 +167,87 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
                   final place = places[index];
                   final image = _photoUrl(place['photo']);
                   final name = place['name'] ?? '';
+                  final lat = place['lat'];
+                  final lng = place['lng'];
                   final types = place['types'] ?? [];
                   final rawLang = Localizations.localeOf(context).languageCode;
                   final lang = rawLang == 'de' ? 'de' : 'en'; // fallback to English
                   final description = Tools.getPrimaryReadableType(types, lang);
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title above image
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              fit: FlexFit.loose,
-                              child: Text(
-                                name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                  return GestureDetector(
+                    onTap: () async {
+                      final query = (lat != null && lng != null)
+                          ? '$lat,$lng'
+                          : Uri.encodeComponent(name);
+
+                      final uri = Platform.isIOS
+                          ? Uri.parse(
+                        lat != null && lng != null
+                            ? 'http://maps.apple.com/?ll=$query'
+                            : 'http://maps.apple.com/?q=$query',
+                      )
+                          : Uri.parse(
+                          'https://www.google.com/maps/search/?api=1&query=$query');
+
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title above image
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                fit: FlexFit.loose,
+                                child: Text(
+                                  name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              description,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
+                              const SizedBox(width: 6),
+                              Text(
+                                description,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
 
-
-
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: image != null
-                              ? Image.network(
-                            image,
-                            height: 100,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: image != null
+                                ? CachedNetworkImage(
+                              imageUrl: image,
+                              height: 150,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const SizedBox(height: 150), // optional
+                              errorWidget: (context, url, error) => Container(
+                                height: 100,
+                                color: Colors.grey[300],
+                                child: const Center(
+                                  child: Icon(Icons.image_not_supported),
+                                ),
+                              ),
+                            )
+                                : Container(
                               height: 100,
                               color: Colors.grey[300],
-                              child: const Center(child: Icon(Icons.image_not_supported)),
+                              child: const Center(child: Icon(Icons.image)),
                             ),
-                          )
-                              : Container(
-                            height: 100,
-                            color: Colors.grey[300],
-                            child: const Center(child: Icon(Icons.image)),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -178,4 +258,5 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
       ),
     );
   }
+
 }

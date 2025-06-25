@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
@@ -16,10 +15,10 @@ import '../../tools/tools.dart';
 
 
 class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
+  static String TAG = "CountryViewModel";
+
   final CountryRepository _repository;
   final GeocodingHelper _geocoding;
-
-  static String TAG = "CountryViewModel";
 
   Timer? _pollingTimer;
 
@@ -36,6 +35,8 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   int? utcOffset;
   Country? country;
   List<ForecastDay>? forecast;
+  bool forecastError = false;
+
   Map<String, String>? currencySymbols;
   String? fromCurrency;
   String? toCurrency;
@@ -44,7 +45,8 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   bool rateError = false;
   String? error;
 
-  AsyncValue<List<Map<String, dynamic>>> nearbyAttractions = const AsyncValue.loading();
+  List<Map<String, dynamic>>? nearbyAttractions;
+  bool attractionsError = false;
 
 
   CountryViewModel(this._repository, this._geocoding);
@@ -169,6 +171,10 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         city = info["city"];
         address = info["address"];
         notifyListeners();
+      } else {
+        error = 'Failed to load location information.';
+        notifyListeners();
+        return; // Prevent further logic from running on null data
       }
 
       if(updateAll) {
@@ -181,8 +187,12 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         notifyListeners();
 
         final result = await _repository.getWeatherForecast(latitude, longitude);
-        forecast = result;
-        utcOffset = result.isNotEmpty ? result.first.utcOffset : null;
+        if(result!=null) {
+          forecast = result;
+          utcOffset = result!.isNotEmpty ? result.first.utcOffset : null;
+        } else {
+          forecastError = true;
+        }
         notifyListeners();
 
         currencySymbols = await _repository.getCurrencySymbols();
@@ -192,9 +202,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         if (currencySymbols!.containsKey(toCurrency)) {
           await updateExchangeRate(fromCurrency!, toCurrency!);
         }
-
         await loadNearbyAttractions();
-
       }
 
     } catch (e) {
@@ -222,17 +230,10 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> loadNearbyAttractions() async {
     if (latitude == null || longitude == null) return;
-
-    nearbyAttractions = const AsyncValue.loading();
-    notifyListeners();
-
-    try {
-      final data = await PlacesApiClient().getNearbyAttractions(latitude!, longitude!);
-      nearbyAttractions = AsyncValue.data(data);
-    } catch (e, st) {
-      nearbyAttractions = AsyncValue.error(e, st);
+    nearbyAttractions = await PlacesApiClient().getNearbyAttractions(latitude!, longitude!);
+    if(nearbyAttractions== null) {
+      attractionsError=true;
     }
-
     notifyListeners();
   }
 

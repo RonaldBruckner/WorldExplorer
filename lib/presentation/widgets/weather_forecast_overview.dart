@@ -9,12 +9,13 @@ import '../pages/weather_detail_page.dart';
 class WeatherForecastOverview extends StatefulWidget {
   final List<ForecastDay>? forecast;
   final String currentCityName;
-
+  final bool forecastError;
 
   const WeatherForecastOverview({
     super.key,
     required this.forecast,
     required this.currentCityName,
+    required this.forecastError,
   });
 
   @override
@@ -96,6 +97,10 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
 
   @override
   Widget build(BuildContext context) {
+
+    if(widget.forecastError) {
+      return const SizedBox.shrink();
+    }
 
     if (_forecast == null) {
       return const SizedBox(
