@@ -12,11 +12,13 @@ class GeocodingHelper {
     try {
       final language = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
 
-      Tools.logDebug(TAG,'GeocodingHelper language: $language');
+      //Tools.logDebug(TAG,'GeocodingHelper language: $language');
 
       final url = Uri.parse(
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constants.mapsApiKey}&language=$language',
       );
+
+      //Tools.logDebug(TAG,'GeocodingHelper url: $url');
 
       final response = await http.get(url).timeout(const Duration(seconds: 5));
 

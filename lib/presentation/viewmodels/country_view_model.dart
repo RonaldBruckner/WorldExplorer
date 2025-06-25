@@ -147,6 +147,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         latitude = null;
         longitude = null;
         utcOffset = null;
+        nearbyAttractions = null;
 
         notifyListeners();
       }
@@ -186,6 +187,8 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
         notifyListeners();
 
+        await loadNearbyAttractions();
+
         final result = await _repository.getWeatherForecast(latitude, longitude);
         if(result!=null) {
           forecast = result;
@@ -202,7 +205,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         if (currencySymbols!.containsKey(toCurrency)) {
           await updateExchangeRate(fromCurrency!, toCurrency!);
         }
-        await loadNearbyAttractions();
+
       }
 
     } catch (e) {

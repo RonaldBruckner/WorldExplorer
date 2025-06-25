@@ -24,14 +24,23 @@ class NearbyAttractionsWidget extends StatefulWidget {
 }
 
 class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
-  final PageController _controller = PageController(viewportFraction: 0.9);
+
+  static String TAG = "NearbyAttractionsWidget";
+
+  PageController? _controller;
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _controller.addListener(() {
-      final newPage = _controller.page?.round() ?? 0;
+    _initPageController();
+  }
+
+  void _initPageController() {
+    _controller?.dispose();
+    _controller = PageController(viewportFraction: 0.9);
+    _controller!.addListener(() {
+      final newPage = _controller!.page?.round() ?? 0;
       if (newPage != _currentPage) {
         setState(() => _currentPage = newPage);
       }
@@ -44,6 +53,12 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
   }
 
   @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Hide widget entirely on error
     if (widget.attractionsError) {
@@ -52,6 +67,11 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
 
     // Show loading card
     if (widget.attractions == null) {
+
+      _currentPage = 0;
+      _controller?.dispose();
+      _controller = null;
+
       final loc = AppLocalizations.of(context);
       final title =
           '${loc?.nearby_places_around ?? "Nearby places around"} ${widget.cityName ?? "..."}';
@@ -161,6 +181,7 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
             SizedBox(
               height: 180,
               child: PageView.builder(
+                key: ValueKey(widget.attractions),
                 controller: _controller,
                 itemCount: places.length,
                 itemBuilder: (context, index) {
