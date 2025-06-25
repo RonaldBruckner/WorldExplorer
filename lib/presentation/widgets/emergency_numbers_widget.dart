@@ -16,8 +16,17 @@ class EmergencyNumbersWidget extends StatefulWidget {
   final double latitude;
   final double longitude;
   final bool gpsMode;
+  final VoidCallback? onTap;
 
-  const EmergencyNumbersWidget({super.key, required this.countryCode , required this.address , required this.latitude , required this.longitude , required this.gpsMode});
+  const EmergencyNumbersWidget({
+    super.key,
+    required this.countryCode ,
+    required this.address ,
+    required this.latitude ,
+    required this.longitude ,
+    required this.gpsMode,
+    this.onTap,
+  });
 
   @override
   State<EmergencyNumbersWidget> createState() => _EmergencyNumbersWidgetState();
@@ -217,31 +226,41 @@ class _EmergencyNumbersWidgetState extends State<EmergencyNumbersWidget>  with S
             if (widget.gpsMode) ...[
               const SizedBox(height: 4),
               const Divider(),
-              Row(
-                children: [
-                  FadeTransition(
-                    opacity: _opacity,
-                    child: const Text('📍'),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${AppLocalizations.of(context)!.current_location}:',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(widget.address, style: const TextStyle(fontSize: 14)),
-              const SizedBox(height: 4),
-              Text(
-                'Latitude: ${widget.latitude}',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              Text(
-                'Longitude: ${widget.longitude}',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              GestureDetector(
+                onTap: widget.onTap,
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        FadeTransition(
+                          opacity: _opacity,
+                          child: const Text('📍'),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${AppLocalizations.of(context)!.current_location}:',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(widget.address, style: const TextStyle(fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Latitude: ${widget.latitude}',
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    Text(
+                      'Longitude: ${widget.longitude}',
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
             ],
+
           ],
         ),
       ),

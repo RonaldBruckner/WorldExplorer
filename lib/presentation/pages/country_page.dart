@@ -113,6 +113,7 @@ class _CountryPageState extends ConsumerState<CountryPage> {
                 latitude: model.latitude!,
                 longitude: model.longitude!,
                 gpsMode: model.isGpsMode,
+                onTap: model.openMapForCurrentLocation,
               ),
               const SizedBox(height: 70),
             ],
