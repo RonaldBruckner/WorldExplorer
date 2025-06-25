@@ -90,6 +90,7 @@ class _CountryPageState extends ConsumerState<CountryPage> {
                     );
                   }
                 },
+                onSvgTap: model.openMapForCurrentLocation,
               ),
               const SizedBox(height: 8),
               WeatherForecastOverview(

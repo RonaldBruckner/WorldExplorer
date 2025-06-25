@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import '../../data/models/country.dart';
 import '../../data/models/openweather_forecast_day.dart';
@@ -210,6 +213,20 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
     } finally {
       notifyListeners();
     }
+  }
+
+  Future<void> openMapForCurrentLocation() async {
+    if (latitude == null || longitude == null) return;
+
+    final lat = latitude;
+    final lon = longitude;
+
+    final url = Platform.isIOS
+        ? 'http://maps.apple.com/?ll=$lat,$lon'
+        : 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
+
+    final uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   DateTime getLocalTime() {

@@ -6,10 +6,13 @@ import 'package:country_flags/country_flags.dart';
 import 'package:country_map_svg/country_map_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart';
+import 'package:http/http.dart' as ref;
 import 'package:intl/intl.dart';
 
 import '../../constants.dart';
 import '../../data/models/country.dart';
+import '../../providers/country_view_model_provider.dart';
 import '../../tools/tools.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -18,6 +21,7 @@ class CountryOverviewHeader extends StatefulWidget {
   final String? countryName;
   final Country? country;
   final VoidCallback? onTap;
+  final VoidCallback? onSvgTap;
   final int? utcOffset;
   final bool isGpsMode;
 
@@ -33,6 +37,7 @@ class CountryOverviewHeader extends StatefulWidget {
     required this.onCountrySelected,
     required this.isGpsMode,
     this.onTap,
+    this.onSvgTap,
   });
 
 
@@ -406,14 +411,17 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
                   ),
                   Expanded(
                     child: Center(
-                      child: SizedBox(
-                        height: 80,
-                        width: 80,
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: CountryMapSvg.getWidget(
-                            widget.countryCode!.toLowerCase(),
-                            colorFilter: const ColorFilter.mode(Colors.teal, BlendMode.srcIn),
+                      child: GestureDetector(
+                        onTap: widget.onSvgTap,
+                        child: SizedBox(
+                          height: 80,
+                          width: 80,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            child: CountryMapSvg.getWidget(
+                              widget.countryCode!.toLowerCase(),
+                              colorFilter: const ColorFilter.mode(Colors.teal, BlendMode.srcIn),
+                            ),
                           ),
                         ),
                       ),
