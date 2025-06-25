@@ -37,8 +37,6 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
 
     final forecast = widget.forecast;
 
-
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -46,6 +44,11 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.teal,
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark, // Android
+          statusBarBrightness: Brightness.light,     // iOS
+        ),
       ),
       body: Stack(
         fit: StackFit.expand,
