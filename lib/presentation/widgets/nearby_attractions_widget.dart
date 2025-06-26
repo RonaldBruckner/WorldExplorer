@@ -116,6 +116,9 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
       );
     }
 
+    if (_controller == null && widget.attractions != null) {
+      _initPageController();
+    }
     // Attractions are available
     final places = widget.attractions!.take(10).toList();
     final loc = AppLocalizations.of(context);
