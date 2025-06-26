@@ -9,6 +9,8 @@ class Constants {
   static String get timeZoneApiKey => dotenv.env['TIMEZONE_API_KEY'] ?? '';
   static String get mapsApiKey => dotenv.env['MAPS_API_KEY'] ?? '';
 
+  static const int API_TIMEOUT_IN_S = 15;
+
 
   static const List<Map<String, dynamic>> supportedCountries = [
     {'nameKey': 'country_af', 'code': 'AF', 'lat': 34.5289, 'lng': 69.1725}, // Afghanistan, Kabul

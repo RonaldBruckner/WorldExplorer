@@ -14,7 +14,7 @@ class OpenWeatherApiClient {
       'https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&units=metric&appid=${Constants.openWeatherApiKey}',
     );
     try {
-    final response = await http.get(url).timeout(const Duration(seconds: 5));
+    final response = await http.get(url).timeout(const Duration(seconds: Constants.API_TIMEOUT_IN_S));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -46,10 +46,17 @@ class OpenWeatherApiClient {
       for (var dayStr in selectedDayStrings) {
         final entries = groupedByDay[dayStr]!;
 
+        final city = data['city'];
+        final utcOffsetSeconds = city['timezone'];
+
         // Create ForecastHour list
         final List<ForecastHour> hourly = entries.map((entry) {
+
+          final utcTime = DateTime.parse(entry['dt_txt']);
+          final localTime = utcTime.add(Duration(seconds: utcOffsetSeconds));
+
           return ForecastHour(
-            time: DateTime.parse(entry['dt_txt']),
+            time: localTime,
             temp: (entry['main']['temp'] as num).toDouble(),
             description: entry['weather'][0]['description'],
             iconCode: entry['weather'][0]['icon'],
@@ -57,8 +64,6 @@ class OpenWeatherApiClient {
             humidity: (entry['main']['humidity'] as num).toDouble(),
           );
         }).toList();
-
-        final city = data['city'];
 
         // Get min and max temperature of the day
         final temps = hourly.map((h) => h.temp);
@@ -74,6 +79,16 @@ class OpenWeatherApiClient {
             sunset: city['sunset'],
             utcOffset: city['timezone']
         ));
+      }
+
+      for (var day in forecastDays) {
+        Tools.logDebug(TAG, 'Forecast for ${day.day}: min ${day.minTemp}°C, max ${day.maxTemp}°C');
+        for (var hour in day.hourly) {
+          Tools.logDebug(
+            TAG,
+            '  ${hour.time.toLocal()} | ${hour.temp}°C | ${hour.description} | Wind: ${hour.wind} m/s | Humidity: ${hour.humidity}% | Icon${hour.iconCode}',
+          );
+        }
       }
 
       return forecastDays;

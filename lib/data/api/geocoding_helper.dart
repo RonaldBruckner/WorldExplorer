@@ -20,7 +20,7 @@ class GeocodingHelper {
 
       //Tools.logDebug(TAG,'GeocodingHelper url: $url');
 
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await http.get(url).timeout(const Duration(seconds: Constants.API_TIMEOUT_IN_S));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
