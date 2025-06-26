@@ -207,10 +207,14 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
                                 (a.time.difference(now)).abs() < (b.time.difference(now)).abs() ? a : b);
                               } else {
 
-                                displayHour = day.hourly.firstWhere(
-                                      (h) => h.time.hour == 12,
-                                  orElse: () => day.hourly[day.hourly.length ~/ 2],
+                                final targetTime = DateTime(
+                                  day.hourly.first.time.year,
+                                  day.hourly.first.time.month,
+                                  day.hourly.first.time.day,
+                                  12,
                                 );
+                                displayHour = day.hourly.reduce((a, b) =>
+                                (a.time.difference(targetTime)).abs() < (b.time.difference(targetTime)).abs() ? a : b);
                               }
 
                               return Column(
