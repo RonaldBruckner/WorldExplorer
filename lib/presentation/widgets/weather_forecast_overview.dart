@@ -61,8 +61,10 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
       final sunset = _forecast!.first.sunset;
 
       if (sunrise != null && sunset != null) {
-        final sunriseTime = DateTime.fromMillisecondsSinceEpoch(sunrise * 1000);
-        final sunsetTime = DateTime.fromMillisecondsSinceEpoch(sunset * 1000);
+        final offset = Duration(seconds: _forecast!.first.utcOffset);
+
+        final sunriseTime = DateTime.fromMillisecondsSinceEpoch(sunrise * 1000, isUtc: true).add(offset);
+        final sunsetTime = DateTime.fromMillisecondsSinceEpoch(sunset * 1000, isUtc: true).add(offset);
 
         final formattedSunrise = '${sunriseTime.hour.toString().padLeft(2, '0')}:${sunriseTime.minute.toString().padLeft(2, '0')}';
         final formattedSunset = '${sunsetTime.hour.toString().padLeft(2, '0')}:${sunsetTime.minute.toString().padLeft(2, '0')}';
