@@ -4,7 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
-import '../../l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../tools/tools.dart';
 
 class NearbyAttractionsWidget extends StatefulWidget {
@@ -65,16 +65,13 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
       return const SizedBox.shrink();
     }
 
+    final title = '${AppLocalizations.of(context)!.nearby_places_around} ${widget.cityName ?? "..."}';
     // Show loading card
     if (widget.attractions == null) {
 
       _currentPage = 0;
       _controller?.dispose();
       _controller = null;
-
-      final loc = AppLocalizations.of(context);
-      final title =
-          '${loc?.nearby_places_around ?? "Nearby places around"} ${widget.cityName ?? "..."}';
 
       return Card(
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -121,9 +118,6 @@ class _NearbyAttractionsWidgetState extends State<NearbyAttractionsWidget> {
     }
     // Attractions are available
     final places = widget.attractions!.take(10).toList();
-    final loc = AppLocalizations.of(context);
-    final title =
-        '${loc?.nearby_places_around ?? "Nearby places around"} ${widget.cityName ?? "..."}';
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
