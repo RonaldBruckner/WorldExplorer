@@ -5,7 +5,7 @@ The app uses **Riverpod** for state management and follows an **MVVM architectur
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 ### Country Widget
 - Displays essential country information:
@@ -37,22 +37,15 @@ The app uses **Riverpod** for state management and follows an **MVVM architectur
 
 ### Android
 
-| en1 | en2 | en3 |
-|-----|-----|-----|
-| ![](docs/screenshots/android/en1.png) | ![](docs/screenshots/android/en2.png) | ![](docs/screenshots/android/en3.png) |
 
-| en4 | en5 | en6 |
-|-----|-----|-----|
-| ![](docs/screenshots/android/en4.png) | ![](docs/screenshots/android/en5.png) | ![](docs/screenshots/android/en6.png) |
+| ![]("docs/screenshots android/en1.png") | ![]("docs/screenshots android/en2.png") | ![]("docs/screenshots android/en3.png") |
+| ![]("docs/screenshots android/en4.png") | ![]("docs/screenshots android/en5.png") | ![]("docs/screenshots android/en6.png") |
+
 
 ### iOS
 
-| en1 | en2 | en3 |
-|-----|-----|-----|
-| ![](docs/screenshots/iOS/en1.png) | ![](docs/screenshots/iOS/en2.png) | ![](docs/screenshots/iOS/en3.png) |
+| ![]("docs/screenshots iOS/en1.png") | ![]("docs/screenshots iOS/en2.png") | ![]("docs/screenshots iOS/en3.png") |
+| ![]("docs/screenshots iOS/en4.png") | ![]("docs/screenshots iOS/en5.png") | ![]("docs/screenshots iOS/en6.png") |
 
-| en4 | en5 | en6 |
-|-----|-----|-----|
-| ![](docs/screenshots/iOS/en4.png) | ![](docs/screenshots/iOS/en5.png) | ![](docs/screenshots/iOS/en6.png) |
 
 ---
