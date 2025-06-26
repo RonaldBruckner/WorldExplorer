@@ -4,7 +4,7 @@ class ForecastDay {
   final double maxTemp;
   final int? sunrise;
   final int? sunset;
-  final int? utcOffset;
+  final int utcOffset;
   final List<ForecastHour> hourly;
 
   ForecastDay({

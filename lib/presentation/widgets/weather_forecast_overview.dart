@@ -203,8 +203,11 @@ class _WeatherForecastOverviewState extends State<WeatherForecastOverview> {
 
                               if (i == 0) {
                                 final now = DateTime.now();
+                                final utcNow = DateTime.now().toUtc();
+                                final forecastLocalNow = utcNow.add(Duration(seconds: day.utcOffset));
+
                                 displayHour = day.hourly.reduce((a, b) =>
-                                (a.time.difference(now)).abs() < (b.time.difference(now)).abs() ? a : b);
+                                (a.time.difference(forecastLocalNow)).abs() < (b.time.difference(forecastLocalNow)).abs() ? a : b);
                               } else {
 
                                 final targetTime = DateTime(
