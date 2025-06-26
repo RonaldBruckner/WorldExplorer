@@ -37,15 +37,30 @@ The app uses **Riverpod** for state management and follows an **MVVM architectur
 
 ### Android
 
-
-| ![]("docs/screenshots android/en1.png") | ![]("docs/screenshots android/en2.png") | ![]("docs/screenshots android/en3.png") |
-| ![]("docs/screenshots android/en4.png") | ![]("docs/screenshots android/en5.png") | ![]("docs/screenshots android/en6.png") |
-
+<p float="left">
+  <img src="docs/screenshots android/en1.png" width="30%"/>
+  <img src="docs/screenshots android/en2.png" width="30%"/>
+  <img src="docs/screenshots android/en3.png" width="30%"/>
+</p>
+<p float="left">
+  <img src="docs/screenshots android/en4.png" width="30%"/>
+  <img src="docs/screenshots android/en5.png" width="30%"/>
+  <img src="docs/screenshots android/en6.png" width="30%"/>
+</p>
 
 ### iOS
 
-| ![]("docs/screenshots iOS/en1.png") | ![]("docs/screenshots iOS/en2.png") | ![]("docs/screenshots iOS/en3.png") |
-| ![]("docs/screenshots iOS/en4.png") | ![]("docs/screenshots iOS/en5.png") | ![]("docs/screenshots iOS/en6.png") |
+<p float="left">
+  <img src="docs/screenshots iOS/en1.png" width="30%"/>
+  <img src="docs/screenshots iOS/en2.png" width="30%"/>
+  <img src="docs/screenshots iOS/en3.png" width="30%"/>
+</p>
+<p float="left">
+  <img src="docs/screenshots iOS/en4.png" width="30%"/>
+  <img src="docs/screenshots iOS/en5.png" width="30%"/>
+  <img src="docs/screenshots iOS/en6.png" width="30%"/>
+</p>
+
 
 
 ---
