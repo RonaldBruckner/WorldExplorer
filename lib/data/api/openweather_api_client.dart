@@ -23,9 +23,14 @@ class OpenWeatherApiClient {
       // Group forecasts by day (yyyy-MM-dd)
       final Map<String, List<dynamic>> groupedByDay = {};
       for (var item in list) {
-        final dtTxt = item['dt_txt'];
-        final day = dtTxt.split(' ')[0];
-        groupedByDay.putIfAbsent(day, () => []).add(item);
+        final utcTime = DateTime.parse(item['dt_txt']);
+        final localTime = utcTime.add(Duration(seconds: data['city']['timezone']));
+        final localDayStr = '${localTime.year.toString().padLeft(4, '0')}-${localTime.month.toString().padLeft(2, '0')}-${localTime.day.toString().padLeft(2, '0')}';
+
+        groupedByDay.putIfAbsent(localDayStr, () => []).add({
+          ...item,
+          'localTime': localTime.toIso8601String(), // store local time in the item for reuse later
+        });
       }
 
       final today = DateTime.now().toLocal();
@@ -51,9 +56,7 @@ class OpenWeatherApiClient {
 
         // Create ForecastHour list
         final List<ForecastHour> hourly = entries.map((entry) {
-
-          final utcTime = DateTime.parse(entry['dt_txt']);
-          final localTime = utcTime.add(Duration(seconds: utcOffsetSeconds));
+          final localTime = DateTime.parse(entry['localTime']); // reuse the exact local time
 
           return ForecastHour(
             time: localTime,
@@ -63,7 +66,8 @@ class OpenWeatherApiClient {
             wind: (entry['wind']['speed'] as num).toDouble(),
             humidity: (entry['main']['humidity'] as num).toDouble(),
           );
-        }).toList();
+        }).toList()
+          ..sort((a, b) => a.time.compareTo(b.time));
 
         // Get min and max temperature of the day
         final temps = hourly.map((h) => h.temp);
