@@ -1,27 +1,58 @@
-WorldExplorer is a mobile travel utility app built with Flutter that provides essential country information and tools based on your current GPS location or selected country.
-Using Riverpod for state management and follows a MVVM structure with repository-based data abstraction and testable ViewModels.
+# 🌍 WorldExplorer
 
-Key Features
-1. Country Widget
-Displays essential country information:
-Country flag and outline
-Country name and capital
-Population, language(s), and more
-Based on GPS location or manual selection
+**WorldExplorer** is a mobile travel utility app built with **Flutter**. It provides essential country information and tools based on your current GPS location or a manually selected country.  
+The app uses **Riverpod** for state management and follows an **MVVM architecture** with repository-based data abstraction and testable ViewModels.
 
-2. Weather Widget
-4-day weather forecast using the OpenWeatherMap API
-Weather icons, temperatures, and summaries
-Automatically adapts to selected country's coordinates
+---
 
-3. Currency Widget
-Real-time exchange rates from Frankfurter API
-Calculate converted prices between two currencies
-Automatically selects the local currency based on country code
+## ✨ Key Features
 
-4. Emergency Widget
-Displays emergency phone numbers (police, fire, ambulance) for the current country
+### Country Widget
+- Displays essential country information:
+  - Country flag and outline
+  - Country name and capital
+  - Population, language(s), and more
+- Works based on GPS or manual country selection
 
-<div align="center">
-  <img src="docs/world_explorer.gif" width="300"/>
-</div>
+### Top Spots Widget
+- Discover local attractions powered by the **Google Places API**
+
+### Weather Widget
+- 4-day weather forecast using **OpenWeatherMap API**
+- Weather icons, temperatures, and summaries
+- Auto-adjusts to the selected country's coordinates
+
+### Currency Widget
+- Real-time exchange rates via **Frankfurter API**
+- Convert prices between two currencies
+- Automatically detects the local currency
+
+### Emergency Widget
+- Shows emergency phone numbers (police, fire, ambulance) based on current or selected country
+
+
+
+
+## Screenshots
+
+### Android
+
+| en1 | en2 | en3 |
+|-----|-----|-----|
+| ![](docs/screenshots/android/en1.png) | ![](docs/screenshots/android/en2.png) | ![](docs/screenshots/android/en3.png) |
+
+| en4 | en5 | en6 |
+|-----|-----|-----|
+| ![](docs/screenshots/android/en4.png) | ![](docs/screenshots/android/en5.png) | ![](docs/screenshots/android/en6.png) |
+
+### iOS
+
+| en1 | en2 | en3 |
+|-----|-----|-----|
+| ![](docs/screenshots/iOS/en1.png) | ![](docs/screenshots/iOS/en2.png) | ![](docs/screenshots/iOS/en3.png) |
+
+| en4 | en5 | en6 |
+|-----|-----|-----|
+| ![](docs/screenshots/iOS/en4.png) | ![](docs/screenshots/iOS/en5.png) | ![](docs/screenshots/iOS/en6.png) |
+
+---
