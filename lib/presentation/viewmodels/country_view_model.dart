@@ -13,7 +13,6 @@ import '../../data/api/geocoding_helper.dart';
 import '../../tools/location_helper.dart';
 import '../../tools/tools.dart';
 
-
 class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   static String TAG = "CountryViewModel";
 
@@ -62,13 +61,17 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
     @override
     void didChangeAppLifecycleState(AppLifecycleState state) {
-      Tools.logDebug(TAG, 'didChangeAppLifecycleState: $isGpsMode ');
+      //Tools.logDebug(TAG, 'didChangeAppLifecycleState: $isGpsMode ');
       if (state == AppLifecycleState.resumed && isGpsMode) {
         _onAppResumed();
       }
     }
 
   void _onAppResumed() async {
+    // Wait a bit to avoid conflicting with immediate manual interactions
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (!isGpsMode) return;
+
     await loadCountryData(lat: 0, lon: 0);
   }
 
@@ -107,31 +110,35 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> loadCountryData({required double lat, required double lon}) async {
     try {
-
-      bool updateAll =true;
+      // Determine and set mode
+      final wasGpsMode = isGpsMode;
 
       if (lat == 0 && lon == 0) {
         isGpsMode = true;
-        if(_pollingTimer==null) {
-          startLocationPolling();
-        }
-        if(country!=null) {
-          updateAll = false;
-        }
+        if (_pollingTimer == null) startLocationPolling();
       } else {
         isGpsMode = false;
         stopLocationPolling();
       }
 
-      if(lat != previousLatitude && lon != previousLongitude) {
-        previousLatitude = lat;
-        previousLongitude = lon;
+      // Ignore outdated GPS loads after switching to manual
+      if (!isGpsMode && lat == 0 && lon == 0) {
+        Tools.logDebug(TAG, 'Ignored outdated GPS update after manual selection');
+        return;
+      }
+
+      // Determine whether to refresh all data
+      // if country is selected from the list !isGpsMode
+      // initial load country==null
+      // gps mode was false but now is true
+      bool updateAll = false;
+      if (!isGpsMode || country==null || (isGpsMode && !wasGpsMode)) {
         updateAll = true;
       }
 
       Tools.logDebug(TAG, 'loadCountryData: $lat , $lon, updateAll: $updateAll');
 
-      if(updateAll) {
+      if (updateAll) {
         // Reset state
         error = null;
         forecast = null;
@@ -152,21 +159,24 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         notifyListeners();
       }
 
-      if(lat==0 && lon==0) {
+      // Update position
+      if (isGpsMode) {
         final pos = await LocationHelper.getCurrentPosition();
         latitude = pos.latitude;
-        longitude =  pos.longitude;
+        longitude = pos.longitude;
       } else {
         latitude = lat;
         longitude = lon;
       }
 
+      // Cache previous location
+      previousLatitude = latitude;
+      previousLongitude = longitude;
 
       final info = await _geocoding.getCountryInfo(latitude!, longitude!);
+      final oldCity = city;
 
-      //Tools.logDebug(TAG, 'loadCountryData info: $info');
-
-      if(info!=null) {
+      if (info != null) {
         countryName = info["name"];
         countryCode = info["code"];
         city = info["city"];
@@ -175,12 +185,15 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
       } else {
         error = 'Failed to load location information.';
         notifyListeners();
-        return; // Prevent further logic from running on null data
+        return;
       }
 
-      if(updateAll) {
-        country = await _repository.getCountryDetails(countryCode!);
+      if(oldCity!=city) {
+        updateAll=true;
+      }
 
+      if (updateAll) {
+        country = await _repository.getCountryDetails(countryCode!);
         if (city == null || city!.isEmpty) {
           city = country?.capital;
         }
@@ -189,10 +202,10 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
         await loadNearbyAttractions();
 
-        final result = await _repository.getWeatherForecast(latitude, longitude);
-        if(result!=null) {
+        final result = await _repository.getWeatherForecast(latitude!, longitude!);
+        if (result != null) {
           forecast = result;
-          utcOffset = result!.isNotEmpty ? result.first.utcOffset : null;
+          utcOffset = result.isNotEmpty ? result.first.utcOffset : null;
         } else {
           forecastError = true;
         }
@@ -200,16 +213,13 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
         currencySymbols = await _repository.getCurrencySymbols();
         fromCurrency = await _repository.getCurrencyFromCountryCode(countryCode!);
-
         toCurrency ??= 'EUR';
+
         if (currencySymbols!.containsKey(toCurrency)) {
           await updateExchangeRate(fromCurrency!, toCurrency!);
         }
-
       }
-
     } catch (e) {
-      //Tools.logDebug('loadCountryData failed', e, stack);
       error = e.toString();
       notifyListeners();
     }
