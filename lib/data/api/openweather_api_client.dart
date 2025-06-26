@@ -85,6 +85,7 @@ class OpenWeatherApiClient {
         ));
       }
 
+      /*
       for (var day in forecastDays) {
         Tools.logDebug(TAG, 'Forecast for ${day.day}: min ${day.minTemp}°C, max ${day.maxTemp}°C');
         for (var hour in day.hourly) {
@@ -94,6 +95,8 @@ class OpenWeatherApiClient {
           );
         }
       }
+
+       */
 
       return forecastDays;
     }
