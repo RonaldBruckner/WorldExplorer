@@ -1,7 +1,7 @@
 {
   "location_permission_required": "Standortberechtigung erforderlich",
   "location_permission_text": "Um dein Land bestimmen zu können, benötigt die App Zugriff auf deinen Standort.",
-  "ok": "OK.",
+  "ok": "OK",
   "cancel": "Abbrechen",
 
   "internet_unavailable": "Keine Internetverbindung verfügbar.",
