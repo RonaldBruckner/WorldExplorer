@@ -1,7 +1,7 @@
 # 🌍 WorldExplorer
 
-**WorldExplorer** is a mobile travel utility app built with **Flutter**. It provides essential country information and tools based on your current GPS location or a manually selected country.  
-The app uses **Riverpod** for state management and follows an **MVVM architecture** with repository-based data abstraction and testable ViewModels.
+**WorldExplorer** is a mobile travel utility app built with Flutter. It provides essential country information and tools based on your current GPS location or a manually selected country.  
+The app uses Riverpod for state management and follows an MVVM architecture with repository-based data abstraction.
 
 ---
 
@@ -15,15 +15,15 @@ The app uses **Riverpod** for state management and follows an **MVVM architectur
 - Works based on GPS or manual country selection
 
 ### Top Spots Widget
-- Discover local attractions powered by the **Google Places API**
+- Discover local attractions powered by the Google Places API
 
 ### Weather Widget
-- 4-day weather forecast using **OpenWeatherMap API**
+- 4-day weather forecast using OpenWeatherMap API
 - Weather icons, temperatures, and summaries
 - Auto-adjusts to the selected country's coordinates
 
 ### Currency Widget
-- Real-time exchange rates via **Frankfurter API**
+- Real-time exchange rates via Frankfurter API
 - Convert prices between two currencies
 - Automatically detects the local currency
 
