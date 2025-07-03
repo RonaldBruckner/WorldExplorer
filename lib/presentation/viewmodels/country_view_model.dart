@@ -21,7 +21,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   Timer? _pollingTimer;
 
-  bool _hasInitialized = false;
+  bool _locationPermissionDeclined = false;
   // State
   String? countryCode;
   String? countryName;
@@ -62,7 +62,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
     @override
     void didChangeAppLifecycleState(AppLifecycleState state) {
       //Tools.logDebug(TAG, 'didChangeAppLifecycleState: $isGpsMode ');
-      if (state == AppLifecycleState.resumed && isGpsMode) {
+      if (state == AppLifecycleState.resumed && isGpsMode && !_locationPermissionDeclined) {
         _onAppResumed();
       }
     }
@@ -77,15 +77,12 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   // Optionally inject these via constructor if needed
   Future<void> checkAndLoadRequirements(BuildContext context) async {
-    if (_hasInitialized) return;
-    _hasInitialized = true;
 
     final hasInternet = await Tools.checkInternet();
     var hasGPS = await Tools.checkGPS(); // mutable
 
     LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
+    if (permission == LocationPermission.denied ) {
 
       final agreed = await Tools.showLocationPermissionDialog(context);
       if (agreed) {
@@ -95,10 +92,15 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
       // If user declined, fail
       if (permission != LocationPermission.always &&
           permission != LocationPermission.whileInUse) {
-        return Tools.showMissingRequirementsDialog(context, hasInternet, false);
+        Tools.showMissingRequirementsDialog(context, hasInternet, false);
+        _locationPermissionDeclined = true;
+        return;
       }
 
       hasGPS = await Tools.checkGPS();
+    } else if(permission == LocationPermission.deniedForever) {
+      // If user permanently denied, fail
+      return Tools.showMissingRequirementsDialog(context, hasInternet, false);
     }
 
     if (!hasInternet || !hasGPS) {
@@ -162,8 +164,14 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
       // Update position
       if (isGpsMode) {
         final pos = await LocationHelper.getCurrentPosition();
-        latitude = pos.latitude;
-        longitude = pos.longitude;
+        if (pos == null) {
+          // Default to Germany, Berlin
+          latitude = 52.5200;
+          longitude = 13.4050;
+        } else {
+          latitude = pos.latitude;
+          longitude = pos.longitude;
+        }
       } else {
         latitude = lat;
         longitude = lon;
