@@ -12,6 +12,10 @@ import '../../data/repositories/country_repository.dart';
 import '../../data/api/geocoding_helper.dart';
 import '../../tools/location_helper.dart';
 import '../../tools/tools.dart';
+import '../../tools/shared_preferences_helper.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   static String TAG = "CountryViewModel";
@@ -21,7 +25,6 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
   Timer? _pollingTimer;
 
-  bool _locationPermissionDeclined = false;
   // State
   String? countryCode;
   String? countryName;
@@ -42,11 +45,13 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   double? exchangeRate;
   bool isGpsMode = true;
   bool rateError = false;
+  bool hasInternet = true;
   String? error;
 
   List<Map<String, dynamic>>? nearbyAttractions;
   bool attractionsError = false;
 
+  String? noInternetMessage;
 
   CountryViewModel(this._repository, this._geocoding);
 
@@ -58,60 +63,88 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
   }
 
-
-    @override
-    void didChangeAppLifecycleState(AppLifecycleState state) {
-      //Tools.logDebug(TAG, 'didChangeAppLifecycleState: $isGpsMode ');
-      if (state == AppLifecycleState.resumed && isGpsMode && !_locationPermissionDeclined) {
-        _onAppResumed();
-      }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    //Tools.logDebug(TAG, 'didChangeAppLifecycleState: $isGpsMode ');
+    if (state == AppLifecycleState.resumed && isGpsMode) {
+      _onAppResumed();
     }
+  }
 
   void _onAppResumed() async {
     // Wait a bit to avoid conflicting with immediate manual interactions
     await Future.delayed(const Duration(milliseconds: 200));
     if (!isGpsMode) return;
 
+    if(hasInternet) {
+      await loadCountryData(lat: 0, lon: 0);
+    }
+  }
+
+
+  Future<void> checkAndLoadRequirements(BuildContext context) async {
+
+    hasInternet = await Tools.checkInternet();
+
+    if (!hasInternet) {
+      error = AppLocalizations.of(context)!.internet_unavailable;
+      notifyListeners();
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    Tools.logDebug("Tools", 'LocationPermission: $permission');
+
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+
+      final agreed = await Tools.showLocationPermissionDialog(context);
+
+      if (agreed) {
+        permission = await Geolocator.requestPermission();
+
+        Tools.logDebug("Tools", 'showLocationPermissionDialog permission: ''$permission');
+        if (permission == LocationPermission.deniedForever) {
+          await Geolocator.openAppSettings();
+          return;
+        }
+        if (permission != LocationPermission.always &&
+            permission != LocationPermission.whileInUse ) {
+          await loadInitialData();
+          await loadCountryData(lat: latitude!, lon: longitude!);
+          return;
+        }
+      } else {
+        await loadInitialData();
+        await loadCountryData(lat: latitude!, lon: longitude!);
+        return;
+      }
+    }
+
     await loadCountryData(lat: 0, lon: 0);
   }
 
-  // Optionally inject these via constructor if needed
-  Future<void> checkAndLoadRequirements(BuildContext context) async {
-
-    final hasInternet = await Tools.checkInternet();
-    var hasGPS = await Tools.checkGPS(); // mutable
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied ) {
-
-      final agreed = await Tools.showLocationPermissionDialog(context);
-      if (agreed) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      // If user declined, fail
-      if (permission != LocationPermission.always &&
-          permission != LocationPermission.whileInUse) {
-        Tools.showMissingRequirementsDialog(context, hasInternet, false);
-        _locationPermissionDeclined = true;
-        return;
-      }
-
-      hasGPS = await Tools.checkGPS();
-    } else if(permission == LocationPermission.deniedForever) {
-      // If user permanently denied, fail
-      return Tools.showMissingRequirementsDialog(context, hasInternet, false);
+  Future<void> loadInitialData() async {
+    isGpsMode = false;
+    stopLocationPolling();
+    // Load last selected location from SharedPreferences
+    final lastLocation = await SharedPreferencesHelper.getSelectedLocation();
+    if (lastLocation != null && lastLocation['latitude'] != 0.0 && lastLocation['longitude'] != 0.0) {
+      latitude = lastLocation['latitude'];
+      longitude = lastLocation['longitude'];
+    } else {
+      latitude = 52.5200; // Default to Berlin
+      longitude = 13.4050;
     }
 
-    if (!hasInternet || !hasGPS) {
-      return Tools.showMissingRequirementsDialog(context, hasInternet, hasGPS);
-    }
-
-    await loadCountryData( lat: 0, lon: 0);
   }
+
 
   Future<void> loadCountryData({required double lat, required double lon}) async {
     try {
+      Tools.logDebug("Tools", 'loadCountryData isGpsMode: $isGpsMode lat: $lat, lon: $lon');
+
       // Determine and set mode
       final wasGpsMode = isGpsMode;
 
@@ -121,6 +154,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
       } else {
         isGpsMode = false;
         stopLocationPolling();
+        await SharedPreferencesHelper.saveSelectedLocation(lat, lon);
       }
 
       // Ignore outdated GPS loads after switching to manual
@@ -137,8 +171,6 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
       if (!isGpsMode || country==null || (isGpsMode && !wasGpsMode)) {
         updateAll = true;
       }
-
-      Tools.logDebug(TAG, 'loadCountryData: $lat , $lon, updateAll: $updateAll');
 
       if (updateAll) {
         // Reset state
@@ -164,13 +196,11 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
       // Update position
       if (isGpsMode) {
         final pos = await LocationHelper.getCurrentPosition();
-        if (pos == null) {
-          // Default to Germany, Berlin
-          latitude = 52.5200;
-          longitude = 13.4050;
-        } else {
+        if (pos != null) {
           latitude = pos.latitude;
           longitude = pos.longitude;
+        } else {
+          await loadInitialData();
         }
       } else {
         latitude = lat;
@@ -227,8 +257,14 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
           await updateExchangeRate(fromCurrency!, toCurrency!);
         }
       }
-    } catch (e) {
+    } catch (e, stack) {
       error = e.toString();
+      Tools.logDebug(TAG, error!);
+      Tools.logDebug(TAG, stack.toString());
+      // Log to Crashlytics
+      try {
+        await FirebaseCrashlytics.instance.recordError(e, stack, reason: 'loadCountryData exception');
+      } catch (_) {}
       notifyListeners();
     }
   }

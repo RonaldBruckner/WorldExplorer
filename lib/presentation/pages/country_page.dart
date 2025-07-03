@@ -18,14 +18,15 @@ class CountryPage extends ConsumerStatefulWidget {
 }
 
 class _CountryPageState extends ConsumerState<CountryPage> {
-  
+  bool _requirementsChecked = false;
+
   @override
   Widget build(BuildContext context) {
     final model = ref.watch(countryViewModelProvider);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // only call once when mounted & not yet loaded
-      if (model.latitude == null && model.longitude == null && model.error == null) {
+      if (!_requirementsChecked && model.latitude == null && model.longitude == null && model.error == null) {
+        _requirementsChecked = true;
         ref.read(countryViewModelProvider).checkAndLoadRequirements(context);
       }
     });
@@ -35,10 +36,23 @@ class _CountryPageState extends ConsumerState<CountryPage> {
       return BackgroundScaffold(
         title: '',
         child: Center(
-          child: Text(
-            model.error!,
-            style: const TextStyle(color: Colors.red, fontSize: 16),
-            textAlign: TextAlign.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                AppLocalizations.of(context)!.missing_requirements, // Use a generic error title
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                model.error!,
+                style: const TextStyle(color: Colors.black87, fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       );
@@ -71,8 +85,6 @@ class _CountryPageState extends ConsumerState<CountryPage> {
         ),
       );
     }
-
-
 
     return BackgroundScaffold(
       title: '',
@@ -143,4 +155,3 @@ class _CountryPageState extends ConsumerState<CountryPage> {
     );
   }
 }
-
