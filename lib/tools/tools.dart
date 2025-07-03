@@ -432,20 +432,13 @@ class Tools {
       barrierDismissible: false,
       builder: (_) => PopScope(
         canPop: true,
-        onPopInvoked: (didPop) {
-          if (!didPop) {
-            SystemNavigator.pop();
-          }
-        },
+
         child: AlertDialog(
           title: Text(AppLocalizations.of(context)!.missing_requirements),
           content: Text(message.trim()),
           actions: [
             TextButton(
               onPressed: () {
-                Tools.logDebug("Tools", 'Close App');
-                Navigator.of(context).pop();
-                SystemNavigator.pop(); // This will attempt to close the app on both Android and iOS
               },
               child: const Text('OK'),
             ),
