@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -112,6 +113,20 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
             return;
           } else if (Platform.isIOS) {
             await openAppSettings(); // from url_launcher
+            // Show guidance dialog for iOS users
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text('Enable Location Permission'),
+                content: Text('To enable location permissions, please scroll down, find "WorldExplorer", and allow location access.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: Text('OK'),
+                  ),
+                ],
+              ),
+            );
             return;
           }
         }
