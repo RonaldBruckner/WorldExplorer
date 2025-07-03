@@ -22,6 +22,7 @@ void main() async {
     ),
   );
   await dotenv.load();
+  await SharedPreferencesHelper.init();
   runApp(const ProviderScope(child: WorldExplorerApp()));
 
 
@@ -33,7 +34,7 @@ void main() async {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
     };
-    await SharedPreferencesHelper.init();
+
   });
 }
 
