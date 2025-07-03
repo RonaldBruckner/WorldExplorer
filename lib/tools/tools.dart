@@ -443,8 +443,9 @@ class Tools {
           actions: [
             TextButton(
               onPressed: () {
+                Tools.logDebug("Tools", 'Close App');
                 Navigator.of(context).pop();
-                SystemNavigator.pop();
+                SystemNavigator.pop(); // This will attempt to close the app on both Android and iOS
               },
               child: const Text('OK'),
             ),

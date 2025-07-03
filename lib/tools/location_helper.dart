@@ -9,7 +9,6 @@ class LocationHelper {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return null;
-      //throw Exception('Location tools are disabled.');
     }
 
     permission = await Geolocator.checkPermission();
@@ -17,13 +16,11 @@ class LocationHelper {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         return null;
-        //throw Exception('Location permissions are denied.');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       return null;
-      //throw Exception('Location permissions are permanently denied.');
     }
 
     return await Geolocator.getCurrentPosition(
