@@ -106,8 +106,10 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
         Tools.logDebug("Tools", 'showLocationPermissionDialog permission: ''$permission');
         if (permission == LocationPermission.deniedForever) {
-          await Geolocator.openAppSettings();
-          return;
+          if (Platform.isAndroid) {
+            await Geolocator.openAppSettings();
+            return;
+          }
         }
         if (permission != LocationPermission.always &&
             permission != LocationPermission.whileInUse ) {
