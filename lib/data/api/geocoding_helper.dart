@@ -12,13 +12,9 @@ class GeocodingHelper {
     try {
       final language = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
 
-      //Tools.logDebug(TAG,'GeocodingHelper language: $language');
-
       final url = Uri.parse(
         'https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=${Constants.mapsApiKey}&language=$language',
       );
-
-      //Tools.logDebug(TAG,'GeocodingHelper url: $url');
 
       final response = await http.get(url).timeout(const Duration(seconds: Constants.API_TIMEOUT_IN_S));
 
@@ -46,8 +42,6 @@ class GeocodingHelper {
               break;
             }
           }
-
-          Tools.logDebug(TAG,'getCountryInfo cityName: $cityName');
 
           if (countryName != null && countryCode != null) {
             formattedAddress ??= data['results'][0]['formatted_address'] ?? '';
