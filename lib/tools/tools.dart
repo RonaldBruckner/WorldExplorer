@@ -447,4 +447,20 @@ class Tools {
       ),
     );
   }
+
+  static void showLocationPermissionDeniedDialog(BuildContext context) {
+    showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(AppLocalizations.of(context)!.location_permission_required),
+      content: Text(AppLocalizations.of(context)!.location_permission_denied_permanently),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: Text(AppLocalizations.of(context)!.ok),
+        ),
+      ],
+    ),
+    );
+  }
 }

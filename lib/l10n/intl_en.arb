@@ -320,6 +320,9 @@
   "no_emergency_numbers_found_for" : "No emergency numbers found for",
   "failed_to_load_local_emergency_numbers" : "Failed to load local emergency numbers",
   "confirm_call_title": "Call Emergency Number?",
-  "confirm_call_text": "Do you want to call {number}?"
+  "confirm_call_text": "Do you want to call {number}?",
+
+  "location_permission_denied_permanently": "Location permission is permanently denied. You can enable it in the iOS settings. Scroll down, find \"WorldExplorer\", and allow location access."
+
 
 }

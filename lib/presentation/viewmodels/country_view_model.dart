@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -101,7 +100,13 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
     if (permission == LocationPermission.denied ||
         permission == LocationPermission.deniedForever) {
 
-      final agreed = await Tools.showLocationPermissionDialog(context);
+      bool agreed = false;
+      if (Platform.isIOS && permission == LocationPermission.deniedForever) {
+        // Show a dialog that location permission is deniedForever and can be set in the settings
+
+      } else {
+        agreed = await Tools.showLocationPermissionDialog(context);
+      }
 
       if (agreed) {
         permission = await Geolocator.requestPermission();
@@ -110,23 +115,6 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         if (permission == LocationPermission.deniedForever) {
           if (Platform.isAndroid) {
             await Geolocator.openAppSettings();
-            return;
-          } else if (Platform.isIOS) {
-            await openAppSettings(); // from url_launcher
-            // Show guidance dialog for iOS users
-            showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                title: Text('Enable Location Permission'),
-                content: Text('To enable location permissions, please scroll down, find "WorldExplorer", and allow location access.'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: Text('OK'),
-                  ),
-                ],
-              ),
-            );
             return;
           }
         }

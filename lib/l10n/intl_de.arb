@@ -318,5 +318,7 @@
   "no_emergency_numbers_found_for" : "Keine Notfallnummern gefunden für",
   "failed_to_load_local_emergency_numbers" : "Notfallnummern konnten nicht geladen werden",
   "confirm_call_title": "Notrufnummer anrufen?",
-  "confirm_call_text": "Möchtest du die Nummer {number} anrufen?"
+  "confirm_call_text": "Möchtest du die Nummer {number} anrufen?",
+
+  "location_permission_denied_permanently": "Die Standortberechtigung ist dauerhaft verweigert. Du kannst sie in den iOS-Einstellungen aktivieren. Scrolle nach unten, suche \"WorldExplorer\" und erlaube den Standortzugriff."
 }
