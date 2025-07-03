@@ -102,7 +102,6 @@ class _CountryOverviewHeaderState extends State<CountryOverviewHeader> with Tick
   // Call this in initState to load facts from assets
   Future<void> loadCountryFacts(String countryCode, String languageCode) async {
     try {
-      Tools.logDebug(TAG, 'loadCountryFacts countryCode: $countryCode');
 
       final language = languageCode == 'de' ? 'de' : 'en';
       final jsonString = await rootBundle.loadString('assets/country_facts_$language.json');
