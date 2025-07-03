@@ -102,8 +102,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
 
       bool agreed = false;
       if (Platform.isIOS && permission == LocationPermission.deniedForever) {
-        // Show a dialog that location permission is deniedForever and can be set in the settings
-
+        Tools.showLocationPermissionDeniedDialog(context);
       } else {
         agreed = await Tools.showLocationPermissionDialog(context);
       }
