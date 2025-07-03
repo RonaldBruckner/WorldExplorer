@@ -65,6 +65,12 @@ The app uses Riverpod for state management and follows an MVVM architecture with
 
 ## Download
 
-[![Get it on Google Play](https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg)](https://play.google.com/store/apps/details?id=at.rony.worldexplorer)
-&nbsp;
-[![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://testflight.apple.com/join/CwDrV8AK)
+<p float="left">
+  <a href="https://play.google.com/store/apps/details?id=at.rony.worldexplorer" target="_blank">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" height="60">
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://testflight.apple.com/join/CwDrV8AK" target="_blank">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="60">
+  </a>
+</p>
