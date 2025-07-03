@@ -1,4 +1,4 @@
-# 🌍 WorldExplorer
+# ?? WorldExplorer
 
 **WorldExplorer** is a mobile travel utility app built with Flutter. It provides essential country information and tools based on your current GPS location or a manually selected country.  
 The app uses Riverpod for state management and follows an MVVM architecture with repository-based data abstraction.
@@ -29,9 +29,9 @@ The app uses Riverpod for state management and follows an MVVM architecture with
 
 ### Emergency Widget
 - Shows emergency phone numbers (police, fire, ambulance) based on current or selected country
+- Displays the user's current address for emergency reference
 
-
-
+---
 
 ## Screenshots
 
@@ -61,6 +61,10 @@ The app uses Riverpod for state management and follows an MVVM architecture with
   <img src="docs/screenshots iOS/en6.png" width="30%"/>
 </p>
 
-
-
 ---
+
+## Download
+
+[![Get it on Google Play](https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg)](https://play.google.com/store/apps/details?id=at.rony.worldexplorer)
+&nbsp;
+[![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://testflight.apple.com/join/CwDrV8AK)
