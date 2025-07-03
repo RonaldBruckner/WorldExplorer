@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
 import '../../data/api/places_api_client.dart';
@@ -108,6 +109,9 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         if (permission == LocationPermission.deniedForever) {
           if (Platform.isAndroid) {
             await Geolocator.openAppSettings();
+            return;
+          } else if (Platform.isIOS) {
+            await openAppSettings(); // from url_launcher
             return;
           }
         }
