@@ -50,10 +50,6 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>This app needs location access to show your position on the map.</string>
-<key>NSLocationAlwaysUsageDescription</key>
-<string>This app needs constant location access to support background features.</string>
-<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-<string>We use your location to improve user experience.</string>
+<string>This app uses your location to determine your current country and address in order to show relevant travel information such as nearby hotspots, local weather, emergency numbers, and currency info.</string>
 </dict>
 </plist>
