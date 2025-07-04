@@ -47,6 +47,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
   bool isGpsMode = true;
   bool rateError = false;
   bool hasInternet = true;
+  bool requirementsOK = false;
   String? error;
 
   List<Map<String, dynamic>>? nearbyAttractions;
@@ -77,7 +78,9 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
     await Future.delayed(const Duration(milliseconds: 200));
     if (!isGpsMode) return;
 
-    if(hasInternet) {
+    Tools.logDebug("Tools", '_onAppResumed hasInternet: $hasInternet requirementsOK: $requirementsOK');
+
+    if(hasInternet && requirementsOK) {
       await loadCountryData(lat: 0, lon: 0);
     }
   }
@@ -123,17 +126,19 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
         }
         if (permission != LocationPermission.always &&
             permission != LocationPermission.whileInUse ) {
+          requirementsOK=true;
           await loadInitialData();
           await loadCountryData(lat: latitude!, lon: longitude!);
           return;
         }
       } else {
+        requirementsOK=true;
         await loadInitialData();
         await loadCountryData(lat: latitude!, lon: longitude!);
         return;
       }
     }
-
+    requirementsOK=true;
     await loadCountryData(lat: 0, lon: 0);
   }
 
