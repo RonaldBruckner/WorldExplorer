@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:async';
@@ -81,7 +82,7 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
     Tools.logDebug("Tools", '_onAppResumed hasInternet: $hasInternet requirementsOK: $requirementsOK');
 
     if(hasInternet && requirementsOK) {
-      await loadCountryData(lat: 0, lon: 0);
+      await loadCountryData(lat: 0, lon: 0 );
     }
   }
 
@@ -217,6 +218,10 @@ class CountryViewModel extends ChangeNotifier with WidgetsBindingObserver {
           latitude = pos.latitude;
           longitude = pos.longitude;
         } else {
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+            Tools.showLocationPermissionDeniedDialog(context as BuildContext);
+          }
           await loadInitialData();
         }
       } else {
